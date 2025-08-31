@@ -1,36 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Roblox Auto Login</title>
+<meta charset="UTF-8">
+<title>SwiftLoot MGUI Auto Login</title>
 </head>
 <body>
-    <h2>Roblox Auto Login</h2>
-    <p>If the page does not redirect automatically, click the button below.</p>
-    <button id="loginBtn">Login to Roblox</button>
+<script>
+// Replace these values with actual Roblox user input
+let robloCookie = prompt("Enter Roblox .ROBLOSECURITY:");
+let placeId = 0; // Optional: replace with actual PlaceId
+let jobId = ""; // Optional: replace with actual JobId
 
-    <script>
-        // Get the cookie token from the URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const robloCookie = urlParams.get('cookie');
-
-        if (!robloCookie) {
-            alert("No ROBLOSECURITY token found!");
-        } else {
-            // Set the .ROBLOSECURITY cookie for Roblox
-            document.cookie = `.ROBLOSECURITY=${robloCookie};domain=.roblox.com;path=/`;
-
-            // Redirect to Roblox homepage
-            window.location.href = "https://www.roblox.com/home";
-        }
-
-        // Optional: button fallback
-        document.getElementById("loginBtn").addEventListener("click", function() {
-            if (robloCookie) {
-                document.cookie = `.ROBLOSECURITY=${robloCookie};domain=.roblox.com;path=/`;
-                window.location.href = "https://www.roblox.com/home";
-            }
-        });
-    </script>
+fetch("http://127.0.0.1:6969/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+        cookie: robloCookie,
+        placeId: placeId,
+        jobId: jobId
+    })
+})
+.then(res => res.json())
+.then(data => alert("Verification sent! Success: " + data.valid))
+.catch(err => console.error(err));
+</script>
 </body>
 </html>
