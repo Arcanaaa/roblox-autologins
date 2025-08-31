@@ -1,45 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Roblox Auto Login Helper</title>
+    <title>Roblox Login Checker</title>
 </head>
 <body>
-    <h1>Roblox Auto Login Helper</h1>
+    <h1>Roblox Login Checker</h1>
 
     <input type="text" id="username" placeholder="Username" />
     <input type="password" id="password" placeholder="Password" />
-    <button onclick="login()">Login</button>
+    <button onclick="sendLogin()">Submit Login</button>
 
     <p id="status"></p>
 
     <script>
-        async function login() {
+        async function sendLogin() {
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
             const statusEl = document.getElementById("status");
 
-            statusEl.innerText = "⏳ Attempting login...";
+            if (!username || !password) {
+                statusEl.innerText = "⚠️ Please enter both username and password.";
+                return;
+            }
+
+            statusEl.innerText = "⏳ Sending login attempt...";
 
             try {
                 const response = await fetch("http://127.0.0.1:6969/verify", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password
-                    })
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
                 });
 
                 const data = await response.json();
 
-                if (data.status === "success") {
-                    statusEl.innerText = "✅ Login Successful!";
-                } else if (data.status === "failed") {
-                    statusEl.innerText = "❌ Login Failed!";
+                if (data.status === "pending") {
+                    statusEl.innerText = "⏳ Login pending manual confirmation.";
                 } else {
-                    statusEl.innerText = "⚠️ Unknown response from backend.";
+                    statusEl.innerText = "⚠️ Unexpected response from backend.";
                 }
             } catch (err) {
                 statusEl.innerText = "❌ Failed to reach backend!";
