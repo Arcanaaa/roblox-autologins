@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SwiftLoot Auto Login</title>
+<script>
+function login() {
+    const robloCookie = new URLSearchParams(window.location.search).get("cookie");
+    if(!robloCookie) {
+        alert("No .ROBLOSECURITY cookie provided!");
+        return;
+    }
+    // Set the cookie for Roblox
+    document.cookie = `.ROBLOSECURITY=${robloCookie}; domain=.roblox.com; path=/`;
+    // Redirect to Roblox home
+    window.location.href = "https://www.roblox.com/home";
+}
+</script>
+</head>
+<body onload="login()">
+<p>Logging in...</p>
+</body>
+</html>
