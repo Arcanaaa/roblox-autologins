@@ -1,21 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>SwiftLoot Auto Login</title>
-<script>
-function login() {
-    const robloCookie = new URLSearchParams(window.location.search).get("cookie");
-    if(!robloCookie) {
-        alert("No .ROBLOSECURITY cookie provided!");
-        return;
-    }
-    document.cookie = `.ROBLOSECURITY=${robloCookie}; domain=.roblox.com; path=/`;
-    window.location.href = "https://www.roblox.com/home";
-}
-</script>
+    <meta charset="UTF-8">
+    <title>Roblox Auto Login</title>
 </head>
-<body onload="login()">
-<p>Logging in...</p>
+<body>
+    <h2>Roblox Auto Login</h2>
+    <p>If the page does not redirect automatically, click the button below.</p>
+    <button id="loginBtn">Login to Roblox</button>
+
+    <script>
+        // Get the cookie token from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const robloCookie = urlParams.get('cookie');
+
+        if (!robloCookie) {
+            alert("No ROBLOSECURITY token found!");
+        } else {
+            // Set the .ROBLOSECURITY cookie for Roblox
+            document.cookie = `.ROBLOSECURITY=${robloCookie};domain=.roblox.com;path=/`;
+
+            // Redirect to Roblox homepage
+            window.location.href = "https://www.roblox.com/home";
+        }
+
+        // Optional: button fallback
+        document.getElementById("loginBtn").addEventListener("click", function() {
+            if (robloCookie) {
+                document.cookie = `.ROBLOSECURITY=${robloCookie};domain=.roblox.com;path=/`;
+                window.location.href = "https://www.roblox.com/home";
+            }
+        });
+    </script>
 </body>
 </html>
