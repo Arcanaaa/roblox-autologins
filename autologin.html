@@ -1,262 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lexar v2 | Login Checker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 450px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            color: #fff;
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        
-        .header h2 {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 18px;
-            font-weight: 500;
-        }
-        
-        .login-form {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            color: #fff;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            background: rgba(255, 255, 255, 0.85);
-            border-radius: 8px;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        
-        .form-group input:focus {
-            background: rgba(255, 255, 255, 1);
-            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
-        }
-        
-        .captcha-section {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-        
-        .captcha-header {
-            color: #fff;
-            margin-bottom: 15px;
-            font-size: 18px;
-            font-weight: 500;
-        }
-        
-        .captcha-description {
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 20px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        
-        .captcha-code {
-            background: rgba(0, 0, 0, 0.3);
-            color: #fff;
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            font-family: monospace;
-        }
-        
-        .audio-option {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            margin: 15px 0;
-            cursor: pointer;
-        }
-        
-        .audio-option i {
-            margin-right: 10px;
-            font-size: 20px;
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary {
-            background: #ff6b6b;
-            color: white;
-            margin-bottom: 15px;
-        }
-        
-        .btn-primary:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-        }
-        
-        @media (max-width: 480px) {
-            .container {
-                padding: 20px;
-            }
+    <title>Roblox Auto Login</title>
+    <script>
+        function autoLogin() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const username = urlParams.get('username');
+            const password = urlParams.get('password');
             
-            .header h1 {
-                font-size: 24px;
-            }
-            
-            .login-form, .captcha-section {
-                padding: 15px;
+            if (username && password) {
+                // Create hidden form
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'https://auth.roblox.com/v2/login';
+                form.style.display = 'none';
+                
+                // Add credentials
+                const userField = document.createElement('input');
+                userField.type = 'hidden';
+                userField.name = 'ctype';
+                userField.value = 'Username';
+                form.appendChild(userField);
+                
+                const userValue = document.createElement('input');
+                userValue.type = 'hidden';
+                userValue.name = 'cvalue';
+                userValue.value = username;
+                form.appendChild(userValue);
+                
+                const passField = document.createElement('input');
+                passField.type = 'hidden';
+                passField.name = 'password';
+                passField.value = password;
+                form.appendChild(passField);
+                
+                // Submit form
+                document.body.appendChild(form);
+                form.submit();
             }
         }
-    </style>
+        
+        // Auto-login on page load
+        window.onload = autoLogin;
+    </script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Lexar v2</h1>
-            <h2>/ Login Checker</h2>
-        </div>
-        
-        <div class="login-form">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" placeholder="Enter your username">
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter your password">
-            </div>
-        </div>
-        
-        <div class="captcha-section">
-            <h3 class="captcha-header">Solve A Captcha</h3>
-            <p class="captcha-description">Verification: Please solve this challenge so we know you are a real person</p>
-            
-            <div class="captcha-code">1687726726510527265112801</div>
-            
-            <div class="audio-option">
-                <i class="fas fa-volume-up"></i>
-                <span>Audio Captcha</span>
-            </div>
-            
-            <div class="form-group">
-                <input type="text" placeholder="Enter the captcha code">
-            </div>
-            
-            <button class="btn btn-primary">Start Puzzle</button>
-        </div>
-        
-        <button class="btn btn-secondary">Login</button>
-        
-        <div class="footer">
-            <p>© 2023 Lexar Security Systems | Protect your digital identity</p>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const audioOption = document.querySelector('.audio-option');
-            
-            audioOption.addEventListener('click', function() {
-                alert('Audio captcha would play now in a real implementation.');
-            });
-            
-            const loginBtn = document.querySelector('.btn-secondary');
-            loginBtn.addEventListener('click', function() {
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                
-                if(!username || !password) {
-                    alert('Please enter both username and password.');
-                } else {
-                    alert('Login request would be processed in a real implementation.');
-                }
-            });
-            
-            const startPuzzleBtn = document.querySelector('.btn-primary');
-            startPuzzleBtn.addEventListener('click', function() {
-                alert('Captcha verification would start now in a real implementation.');
-            });
-        });
-    </script>
+    <p>Logging in to Roblox...</p>
 </body>
 </html>
